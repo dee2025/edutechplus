@@ -1,0 +1,45 @@
+.breadcrumb {
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  list-style: none;
+  gap: 5px;
+}
+
+.shadow {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.breadcrumbItem {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.breadcrumbItem a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.breadcrumbItem a:hover {
+  color: #0056b3;
+}
+
+.active {
+  color: #ff7f50; /* Car-inspired color */
+  border-radius: 5px;
+}
+
+.link {
+  color: white !important;
+}
+
+.link:hover {
+  color: #ff7f50 !important;
+}
+
+
+
+/* login page css */
+
+

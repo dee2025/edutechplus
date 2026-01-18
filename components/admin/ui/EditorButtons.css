@@ -1,0 +1,20 @@
+.is-active {
+  background-color: #000000; /* Light gray background to indicate active state */
+  border: 1px solid #333; /* Darker border for visibility */
+  color: #fff; /* Dark text color */
+  font-weight: bold; /* Optional: make the text bold */
+}
+
+button {
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 12px;
+  margin-left: 4px;
+  border: 1px solid black;
+}
+
+.btnSection{
+    border-radius: 8px;
+    padding: 4px;
+    background-color: rgb(199, 199, 199);
+}

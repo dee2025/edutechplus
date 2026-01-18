@@ -1,0 +1,184 @@
+/* Basic editor styles */
+.tiptap {
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    height: 400px;
+    overflow: auto;
+    border-radius: 8px;
+    /* List styles */
+    ul {
+      list-style-type: disc; /* Ensures bullet points are shown */
+      padding-left: 20px; /* Adds indentation for the list */
+    }
+  
+    ol {
+      list-style-type: decimal; /* Ensures bullet points are shown */
+      padding-left: 20px; /* Adds indentation for the list */
+    }
+  
+    li {
+      margin-bottom: 5px; /* Optional: Adds space between list items */
+    }
+  
+    h1 {
+      font-size: 1.4rem;
+    }
+  
+    h2 {
+      font-size: 1.2rem;
+    }
+  
+    h3 {
+      font-size: 1.1rem;
+    }
+  
+    h4,
+    h5,
+    h6 {
+      font-size: 1rem;
+    }
+  
+    table {
+      border-collapse: collapse;
+      border: 1px solid black;
+      margin: 0;
+      overflow: hidden;
+      table-layout: fixed;
+      width: 50%;
+  
+      &.ProseMirror-selectednode {
+        border-top: 1px solid purple;
+      }
+  
+      td,
+      th {
+        border: 1px solid black;
+        box-sizing: border-box;
+        min-width: 1em;
+        padding: 6px 8px;
+        position: relative;
+        vertical-align: top;
+  
+        &.ProseMirror-selectednode {
+          border-top: 1px solid purple;
+        }
+  
+        > * {
+          margin-bottom: 0;
+        }
+      }
+  
+      th {
+        background-color: #e8dff7;
+        font-weight: bold;
+        text-align: left;
+      }
+  
+      .selectedCell:after {
+        content: '';
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        pointer-events: none;
+        position: absolute;
+        z-index: 2;
+      }
+  
+      .column-resize-handle {
+        bottom: -2px;
+        pointer-events: none;
+        position: absolute;
+        right: -2px;
+        top: 0;
+        width: 4px;
+      }
+    }
+  
+    .tableWrapper {
+      margin: 1.5rem 0;
+      overflow-x: auto;
+    }
+  
+    &.resize-cursor {
+      cursor: ew-resize;
+      cursor: col-resize;
+    }
+  
+    img {
+      display: block;
+  
+      &.ProseMirror-selectednode {
+        outline: 3px solid purple;
+      }
+    }
+  
+    blockquote {
+      border-left: 3px solid black;
+      margin: 1.5rem 0;
+      padding-left: 0.5rem;
+    }
+  
+    hr {
+      border: none;
+      border-top: 1px solid #d1d5db;
+      cursor: pointer;
+      margin: 1rem 0;
+  
+      &.ProseMirror-selectednode {
+        border-top: 1px solid purple;
+      }
+    }
+  
+    code {
+      background-color: #f6f3fe;
+      border-radius: 0.4rem;
+      color: black;
+      font-size: 0.85rem;
+      padding: 0.25em 0.3em;
+    }
+  
+    mark {
+      background-color: #faf594;
+      border-radius: 0.4rem;
+      box-decoration-break: clone;
+      padding: 0.1rem 0.3rem;
+    }
+  
+    ul[data-type='taskList'] {
+      list-style: none;
+      margin-left: 0;
+      padding: 0;
+  
+      li {
+        align-items: flex-start;
+        display: flex;
+  
+        > label {
+          flex: 0 0 auto;
+          margin-right: 0.5rem;
+          user-select: none;
+        }
+  
+        > div {
+          flex: 1 1 auto;
+        }
+      }
+  
+      input[type='checkbox'] {
+        cursor: pointer;
+      }
+  
+      ul[data-type='taskList'] {
+        margin: 0;
+      }
+    }
+  
+    p.is-editor-empty:first-child::before {
+      color: black;
+      content: attr(data-placeholder);
+      float: left;
+      height: 0;
+      pointer-events: none;
+    }
+  }
