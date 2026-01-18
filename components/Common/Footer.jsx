@@ -60,8 +60,9 @@ export default function Footer() {
                             Company
                         </h4>
                         <ul className="space-y-2 text-sm text-gray-400">
-                            <li><Link href="/about" className="hover:text-cyan-400">About</Link></li>
-                            <li><Link href="/contact" className="hover:text-cyan-400">Contact</Link></li>
+                            <li><Link href="/about-us" className="hover:text-cyan-400">About</Link></li>
+                            <li><Link href="/contact-us" className="hover:text-cyan-400">Contact</Link></li>
+                            <li><Link href="/disclaimer" className="hover:text-cyan-400">Disclaimer</Link></li>
                             <li><Link href="/privacy-policy" className="hover:text-cyan-400">Privacy Policy</Link></li>
                             <li><Link href="/terms" className="hover:text-cyan-400">Terms & Conditions</Link></li>
                         </ul>
