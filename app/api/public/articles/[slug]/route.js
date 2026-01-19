@@ -9,14 +9,7 @@ export async function GET(req, { params }) {
   const [[article]] = await pool.query(
     `
         SELECT 
-            a.id,
-            a.title,
-            a.slug,
-            a.excerpt,
-            a.content,
-            a.featured_image,
-            a.read_time,
-            a.published_at,
+            a.*,
             ad.name AS author_name,
             c.name AS category_name,
             c.slug AS category_slug
@@ -27,8 +20,6 @@ export async function GET(req, { params }) {
         `,
     [slug],
   );
-
-  console.log("Article data:", article);
 
   if (!article) {
     return NextResponse.json({ message: "Not found" }, { status: 404 });
