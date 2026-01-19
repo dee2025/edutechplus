@@ -48,7 +48,7 @@ const Header = () => {
           {/* Right: CTA */}
           <div className="hidden lg:flex items-center gap-4">
             <Link
-              href="/latest"
+              href="/latest-articles"
               className="text-sm font-semibold text-cyan-400 hover:opacity-80"
             >
               Latest Updates →
@@ -57,7 +57,7 @@ const Header = () => {
         </div>
 
         {/* Category Pills */}
-        <div className="hidden lg:flex gap-3 mt-5 overflow-x-auto">
+        {/* <div className="hidden lg:flex gap-3 mt-5 overflow-x-auto">
           {menuItems.map((item) => (
             <Link
               key={item.name}
@@ -67,7 +67,7 @@ const Header = () => {
               {item.name}
             </Link>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Mobile Drawer */}
