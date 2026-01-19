@@ -1,7 +1,8 @@
 import ClientLayoutWrapper from "@/components/ClientLayoutWrapper";
+import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Analytics />
         <Toaster position="top-center" reverseOrder={false} />
         <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
       </body>
