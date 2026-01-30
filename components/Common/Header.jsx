@@ -48,6 +48,12 @@ const Header = () => {
           {/* Right: CTA */}
           <div className="hidden lg:flex items-center gap-4">
             <Link
+              href="/roadmaps"
+              className="text-sm font-semibold text-cyan-400 hover:opacity-80"
+            >
+              Roadmaps
+            </Link>
+            <Link
               href="/latest-articles"
               className="text-sm font-semibold text-cyan-400 hover:opacity-80"
             >
