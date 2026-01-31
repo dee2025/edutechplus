@@ -89,6 +89,10 @@ export default async function ArticlePage({ params }) {
     console.warn("extractFaqs failed", e);
     faqs = [];
   }
+
+  // Base URL for absolute links in JSON-LD. Use NEXT_PUBLIC_BASE_URL when set, else empty string.
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "";
+
   /* ---------- SCHEMAS ---------- */
 
   const articleSchema = {
