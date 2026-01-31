@@ -7,13 +7,19 @@ import { extractFaqsFromContent } from "@/lib/extractFaqs";
 import { notFound } from "next/navigation";
 
 async function getArticle(slug) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/public/articles/${slug}`,
-    { cache: "no-store" },
-  );
+  // Use NEXT_PUBLIC_BASE_URL when available (production); otherwise use relative path
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "";
+  const url = `${base}/api/public/articles/${slug}`;
 
-  if (!res.ok) return null;
-  return res.json();
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return null;
+    return res.json();
+  } catch (e) {
+    // network or other fetch error - return null so page renders 404 instead of 500
+    console.warn("getArticle fetch failed", e);
+    return null;
+  }
 }
 
 /* ---------------- SEO METADATA ---------------- */
@@ -27,7 +33,27 @@ export async function generateMetadata({ params }) {
   const title = article.seo_title || article.title;
   const description = article.seo_description || article.excerpt;
 
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/articles/${article.slug}`;
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "";
+  const url = `${base}/articles/${article.slug}`;
+
+  const openGraph = {
+    title,
+    description,
+    url,
+    type: "article",
+    publishedTime: article.published_at,
+  };
+
+  if (article.featured_image) {
+    openGraph.images = [
+      {
+        url: article.featured_image,
+        width: 1200,
+        height: 630,
+        alt: article.title,
+      },
+    ];
+  }
 
   return {
     title,
@@ -35,26 +61,12 @@ export async function generateMetadata({ params }) {
     alternates: {
       canonical: url,
     },
-    openGraph: {
-      title,
-      description,
-      url,
-      type: "article",
-      publishedTime: article.published_at,
-      images: [
-        {
-          url: article.featured_image,
-          width: 1200,
-          height: 630,
-          alt: article.title,
-        },
-      ],
-    },
+    openGraph,
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [article.featured_image],
+      images: article.featured_image ? [article.featured_image] : undefined,
     },
   };
 }
@@ -69,8 +81,14 @@ export default async function ArticlePage({ params }) {
 
   const { article, categories, trending } = data;
 
-  const faqs = extractFaqsFromContent(article.content);
-  console.log(article);
+  let faqs = [];
+  try {
+    faqs = extractFaqsFromContent(article.content || "");
+  } catch (e) {
+    // defensive: do not crash the whole page for malformed content
+    console.warn("extractFaqs failed", e);
+    faqs = [];
+  }
   /* ---------- SCHEMAS ---------- */
 
   const articleSchema = {
@@ -90,7 +108,7 @@ export default async function ArticlePage({ params }) {
       name: "Your Website Name",
       logo: {
         "@type": "ImageObject",
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/logo.png`,
+        url: `${base}/logo.png`,
       },
     },
     mainEntityOfPage: {
