@@ -1,6 +1,8 @@
 import ArticleContent from "@/components/article/ArticleContent";
 import ArticleHeader from "@/components/article/ArticleHeader";
 import ArticleSidebar from "@/components/article/ArticleSidebar";
+import Comments from "@/components/article/Comments";
+import TrackViewClient from "@/components/article/TrackViewClient";
 import { extractFaqsFromContent } from "@/lib/extractFaqs";
 import { notFound } from "next/navigation";
 
@@ -136,6 +138,9 @@ export default async function ArticlePage({ params }) {
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8">
           <ArticleContent article={article} />
+          <TrackViewClient article={article} />
+          {/* Comments */}
+          <Comments slug={article.slug} />
         </div>
         <div className="lg:col-span-4">
           <ArticleSidebar trending={trending} />

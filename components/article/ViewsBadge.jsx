@@ -8,26 +8,13 @@ export default function ViewsBadge({ slug, initial = 0 }) {
   useEffect(() => {
     if (!slug) return;
 
-    const key = `viewed_article_${slug}`;
-    const ttl = 1000 * 60 * 60 * 24; // 24 hours
-    const viewed = typeof window !== "undefined" && localStorage.getItem(key);
-    const now = Date.now();
-
-    if (viewed && now - parseInt(viewed, 10) < ttl) {
-      return; // already counted recently
-    }
-
-    // POST a view event
-    fetch(`/api/public/articles/${slug}/view`, { method: "POST" })
+    // Fetch the current article data to display latest view count
+    // Do NOT POST from here to avoid duplicating the POST done by TrackViewClient
+    fetch(`/api/public/articles/${slug}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data && typeof data.views === "number") {
-          setViews(data.views);
-        }
-        try {
-          localStorage.setItem(key, String(now));
-        } catch (e) {
-          // ignore
+        if (data && data.article && typeof data.article.views === "number") {
+          setViews(data.article.views);
         }
       })
       .catch(() => {

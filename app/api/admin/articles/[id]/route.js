@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 
 function getToken(req) {
-  return req.cookies.get("auth_token")?.value;
+  return req.cookies.get("admin_auth_token")?.value;
 }
 
 /**
@@ -49,6 +49,10 @@ export async function PUT(req, { params }) {
   const {
     title,
     slug,
+    subtitle,
+    canonical_url,
+    tags,
+    content_format,
     excerpt,
     content,
     featured_image,
@@ -90,12 +94,17 @@ export async function PUT(req, { params }) {
     publishedAt = new Date();
   }
 
-  await pool.query(
-    `
+  try {
+    await pool.query(
+      `
         UPDATE articles
         SET
             title = ?,
             slug = ?,
+            subtitle = ?,
+            canonical_url = ?,
+            tags = ?,
+            content_format = ?,
             excerpt = ?,
             content = ?,
             featured_image = ?,
@@ -107,21 +116,35 @@ export async function PUT(req, { params }) {
             read_time = ?
         WHERE id = ?
         `,
-    [
-      title,
-      slug,
-      excerpt || null,
-      content,
-      featured_image || null,
-      category_id || null,
-      finalStatus,
-      publishedAt,
-      seo_title || null,
-      seo_description || null,
-      read_time || null,
-      id,
-    ],
-  );
+      [
+        title,
+        slug,
+        subtitle || null,
+        canonical_url || null,
+        tags || null,
+        content_format || "html",
+        excerpt || null,
+        content,
+        featured_image || null,
+        category_id || null,
+        finalStatus,
+        publishedAt,
+        seo_title || null,
+        seo_description || null,
+        read_time || null,
+        id,
+      ],
+    );
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      {
+        message:
+          "Failed to update article. Confirm DB has the new columns via migration.",
+      },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ message: "Article updated" });
 }

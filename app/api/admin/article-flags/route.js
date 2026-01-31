@@ -3,18 +3,18 @@ import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 
 function getToken(req) {
-    return req.cookies.get("auth_token")?.value;
+  return req.cookies.get("admin_auth_token")?.value;
 }
 
 export async function GET(req) {
-    const token = getToken(req);
-    if (!token) {
-        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+  const token = getToken(req);
+  if (!token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
 
-    jwt.verify(token, process.env.JWT_SECRET);
+  jwt.verify(token, process.env.JWT_SECRET);
 
-    const [rows] = await pool.query(`
+  const [rows] = await pool.query(`
         SELECT
             a.id,
             a.title,
@@ -29,5 +29,5 @@ export async function GET(req) {
         ORDER BY a.created_at DESC
     `);
 
-    return NextResponse.json(rows);
+  return NextResponse.json(rows);
 }

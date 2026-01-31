@@ -1,0 +1,397 @@
+"use client";
+
+import RecentReads from "@/components/profile/RecentReads";
+import StreakCalendar from "@/components/profile/StreakCalendar";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
+
+export default function ProfilePage() {
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [form, setForm] = useState({ name: "", avatar_url: "" });
+  const [initialForm, setInitialForm] = useState(null);
+  const [dirty, setDirty] = useState(false);
+  const router = useRouter();
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    // compute dirty state
+    if (!initialForm) return setDirty(false);
+    setDirty(JSON.stringify(form) !== JSON.stringify(initialForm));
+  }, [form, initialForm]);
+
+  function handleRemoveAvatar() {
+    setForm((f) => ({ ...f, avatar_url: "" }));
+    toast.success("Avatar cleared — remember to Save to persist");
+  }
+  function handleFileChange(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const allowed = ["image/png", "image/jpeg", "image/webp"];
+    const maxBytes = 3 * 1024 * 1024; // 3MB
+    if (!allowed.includes(file.type)) {
+      toast.error("Invalid file type. Use PNG, JPEG or WEBP.");
+      return;
+    }
+    if (file.size > maxBytes) {
+      toast.error("File too large (max 3MB)");
+      return;
+    }
+    setSelectedFile(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  }
+
+  function handleUpload() {
+    doUploadWithXHR();
+  }
+
+  // cleanup preview url object to avoid leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  // upload using an XHR so we can show progress (fetch doesn't have upload progress)
+  function doUploadWithXHR() {
+    if (!selectedFile) return;
+    setUploading(true);
+    setProgress(0);
+
+    const fd = new FormData();
+    fd.append("avatar", selectedFile);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/auth/avatar");
+    xhr.withCredentials = true;
+    xhr.upload.onprogress = function (e) {
+      if (e.lengthComputable) {
+        const p = Math.round((e.loaded / e.total) * 100);
+        setProgress(p);
+      }
+    };
+    xhr.onload = function () {
+      setUploading(false);
+      if (xhr.status === 200) {
+        try {
+          const json = JSON.parse(xhr.responseText);
+          if (json && json.secure_url) {
+            setForm((f) => ({ ...f, avatar_url: json.secure_url }));
+            setUser((u) => ({ ...u, avatar_url: json.secure_url }));
+            toast.success("Avatar uploaded");
+            setSelectedFile(null);
+            setPreviewUrl(null);
+            setProgress(0);
+            // notify other components (Header) to refresh user data
+            document.dispatchEvent(new Event("user-updated"));
+            router.refresh();
+          } else {
+            toast.error("Upload failed");
+          }
+        } catch (err) {
+          console.error(err);
+          toast.error("Upload failed");
+        }
+      } else if (xhr.status === 413) {
+        toast.error("File too large (max 3MB)");
+      } else {
+        const msg = xhr.responseText
+          ? (() => {
+              try {
+                return JSON.parse(xhr.responseText).message;
+              } catch (e) {
+                return null;
+              }
+            })()
+          : null;
+        toast.error(msg || "Upload failed");
+      }
+    };
+    xhr.onerror = function () {
+      setUploading(false);
+      toast.error("Upload failed");
+    };
+    xhr.send(fd);
+  }
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/auth/profile");
+        if (!res.ok) return setUser(null);
+        const json = await res.json();
+        if (!json) return setUser(null);
+        setUser(json);
+        const f = { name: json.name || "", avatar_url: json.avatar_url || "" };
+        setForm(f);
+        setInitialForm(f);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading)
+    return (
+      <div className="p-6">
+        <div className="animate-pulse bg-[#0b0f19] border border-gray-800 rounded p-6 max-w-3xl mx-auto">
+          <div className="h-8 bg-gray-800 rounded w-1/3 mb-4" />
+          <div className="h-32 bg-gray-800 rounded w-full" />
+        </div>
+      </div>
+    );
+
+  if (!user)
+    return (
+      <div className="p-6">
+        <p className="text-gray-300">
+          You need to be logged in to view this page.
+        </p>
+      </div>
+    );
+
+  async function handleSave(e) {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/auth/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.message || "Update failed");
+        return;
+      }
+      setUser(json);
+      const f2 = { name: json.name || "", avatar_url: json.avatar_url || "" };
+      setInitialForm(f2);
+      toast.success("Profile updated");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      toast.error("Server error");
+    }
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <h1 className="text-2xl font-semibold text-gray-100 mb-6">
+        Your Profile
+      </h1>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Profile Card */}
+        <aside className="lg:col-span-4">
+          <div className="bg-[#0b0f19] border border-gray-800 rounded-xl p-6 sticky top-6">
+            <div className="flex flex-col items-center text-center">
+              {/* Avatar */}
+              <div
+                className="w-32 h-32 rounded-full bg-[#111827] border border-gray-700 overflow-hidden flex items-center justify-center cursor-pointer transition hover:scale-[1.02]"
+                onClick={() => document.getElementById("avatar-input")?.click()}
+                role="button"
+                tabIndex={0}
+              >
+                {form.avatar_url ? (
+                  <img
+                    src={form.avatar_url}
+                    alt={form.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-3xl font-semibold text-gray-200">
+                    {(form.name || user.email)[0]?.toUpperCase()}
+                  </span>
+                )}
+              </div>
+
+              {/* Identity */}
+              <div className="mt-4">
+                <p className="text-lg font-semibold text-gray-100">
+                  {form.name || "Unnamed User"}
+                </p>
+                <p className="text-xs text-gray-400">{user.email}</p>
+              </div>
+
+              <div className="mt-3 text-xs text-gray-500">
+                Member since {new Date(user.created_at).toLocaleDateString()}
+              </div>
+
+              {/* Actions */}
+              <div className="mt-6 w-full space-y-2">
+                <button
+                  onClick={() =>
+                    document.getElementById("avatar-input")?.click()
+                  }
+                  className="w-full py-2 bg-[#111827] hover:bg-[#151820] rounded text-gray-200 text-sm"
+                >
+                  Change avatar
+                </button>
+
+                <button
+                  onClick={() => {
+                    navigator.clipboard?.writeText(user.email);
+                    toast.success("Email copied");
+                  }}
+                  className="w-full py-2 bg-[#111827] hover:bg-[#151820] rounded text-gray-200 text-sm"
+                >
+                  Copy email
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <section className="lg:col-span-8 space-y-6">
+          {/* Edit Profile */}
+          <div className="bg-[#0b0f19] border border-gray-800 rounded-xl p-6">
+            <form onSubmit={handleSave} className="space-y-5">
+              {/* Name */}
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Name</label>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#111827] border border-gray-700 rounded-md text-gray-200 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                />
+              </div>
+
+              {/* Avatar Upload */}
+              <div>
+                <label className="block text-xs text-gray-400 mb-2">
+                  Avatar
+                </label>
+
+                <input
+                  id="avatar-input"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      document.getElementById("avatar-input")?.click()
+                    }
+                    className="px-3 py-2 bg-[#111827] hover:bg-[#151820] rounded text-sm text-gray-200"
+                  >
+                    Choose image
+                  </button>
+
+                  {form.avatar_url && !previewUrl && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveAvatar}
+                      className="px-3 py-2 bg-red-600 hover:bg-red-700 rounded text-sm text-white"
+                    >
+                      Remove
+                    </button>
+                  )}
+
+                  <span className="text-xs text-gray-500">
+                    PNG, JPG, WEBP · max 3MB
+                  </span>
+                </div>
+
+                {/* Preview */}
+                {previewUrl && (
+                  <div className="mt-3 flex items-center gap-4">
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="w-20 h-20 rounded-md object-cover border border-gray-700"
+                    />
+
+                    {!uploading && (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={handleUpload}
+                          className="px-3 py-1.5 bg-cyan-400 text-black rounded font-semibold text-sm"
+                        >
+                          Upload
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedFile(null);
+                            setPreviewUrl(null);
+                          }}
+                          className="px-3 py-1.5 bg-[#111827] text-gray-300 rounded text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Progress */}
+                {uploading && (
+                  <div className="mt-3">
+                    <div className="h-2 bg-gray-700 rounded overflow-hidden">
+                      <div
+                        className="h-full bg-cyan-400 transition-all"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Uploading {progress}%
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={!dirty}
+                  className={`px-5 py-2 rounded font-semibold transition ${
+                    dirty
+                      ? "bg-cyan-400 text-black"
+                      : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Save changes
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => router.push("/")}
+                  className="px-4 py-2 bg-[#111827] rounded text-gray-300"
+                >
+                  Cancel
+                </button>
+
+                <span className="text-xs text-gray-500">
+                  {dirty ? "Unsaved changes" : "No changes"}
+                </span>
+              </div>
+            </form>
+          </div>
+
+          {/* Streak */}
+          <div className="mt-6 w-full overflow-x-auto">
+            <StreakCalendar days={180} />
+          </div>
+          {/* Recent Reads */}
+          <RecentReads max={10} />
+        </section>
+      </div>
+    </div>
+  );
+}

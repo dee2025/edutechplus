@@ -1,10 +1,61 @@
 "use client";
 
+import AuthModal from "@/components/UserAuth/AuthModal";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 const Header = () => {
   const [open, setOpen] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [user, setUser] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const router = useRouter();
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    // load current user
+    async function load() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) return setUser(null);
+        const json = await res.json();
+        setUser(json);
+      } catch (err) {
+        setUser(null);
+      }
+    }
+    load();
+
+    function onDocClick(e) {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    }
+    // listen for profile/avatar updates from other pages (e.g., profile upload)
+    document.addEventListener("click", onDocClick);
+    document.addEventListener("user-updated", load);
+    return () => {
+      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("user-updated", load);
+    };
+  }, []);
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    router.refresh();
+  }
+
+  function avatarInitials(name) {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((s) => s[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  }
 
   const menuItems = [
     { name: "AI", path: "/ai" },
@@ -59,6 +110,54 @@ const Header = () => {
             >
               Latest Updates →
             </Link>
+
+            {/* Auth / Profile */}
+            {user ? (
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-[#111827] border border-gray-700 overflow-hidden"
+                >
+                  {user.avatar_url ? (
+                    <img
+                      src={user.avatar_url}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-sm text-gray-200">
+                      {avatarInitials(user.name)}
+                    </span>
+                  )}
+                </button>
+
+                {profileOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-[#0b0f19] border border-gray-800 rounded shadow z-50">
+                    <Link
+                      href="/profile"
+                      className="block px-3 py-2 text-sm text-gray-200 hover:bg-[#111827]"
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-[#111827]"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => setShowAuth(true)}
+                  className="px-3 py-1 rounded bg-cyan-400 text-black font-semibold"
+                >
+                  Login
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -96,6 +195,25 @@ const Header = () => {
             className="w-full mt-3 px-4 py-2 rounded-md bg-[#111827] text-gray-200 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400"
           />
         </div>
+      )}
+
+      {/* Auth modal */}
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onSuccess={async () => {
+            setShowAuth(false);
+            try {
+              const res = await fetch("/api/auth/me");
+              if (!res.ok) return;
+              const json = await res.json();
+              setUser(json);
+              router.refresh();
+            } catch (err) {
+              console.error(err);
+            }
+          }}
+        />
       )}
     </header>
   );

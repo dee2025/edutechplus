@@ -11,7 +11,10 @@ export default function ClientLayoutWrapper({ children }) {
   return (
     <>
       {!isAdmin && <Header />}
+      <div className="bg-[#0b0f19]">
+
       {children}
+      </div>
       {!isAdmin && <Footer />}
     </>
   );

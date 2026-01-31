@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 
 function getToken(req) {
-  return req.cookies.get("auth_token")?.value;
+  return req.cookies.get("admin_auth_token")?.value;
 }
 
 export async function GET(req) {
@@ -18,21 +18,31 @@ export async function GET(req) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  // Ensure the article_views table exists (no-op if already present)
-//   await pool.query(`
-//     CREATE TABLE IF NOT EXISTS article_views (
-//       id INT AUTO_INCREMENT PRIMARY KEY,
-//       article_id INT NOT NULL,
-//       ip VARCHAR(45) DEFAULT NULL,
-//       user_agent VARCHAR(512) DEFAULT NULL,
-//       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-//     ) ENGINE=InnoDB;
-//   `);
+  // Ensure the article_views table exists (safe no-op)
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS article_views (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      article_id INT NOT NULL,
+      user_id INT DEFAULT NULL,
+      ip VARCHAR(45) DEFAULT NULL,
+      user_agent VARCHAR(512) DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_article_created (article_id, created_at),
+      INDEX idx_user_created (user_id, created_at),
+      INDEX idx_ip_created (ip, created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `);
 
   // Run metrics queries
-  const [[totalArticlesRow]] = await pool.query(`SELECT COUNT(*) AS total FROM articles`);
-  const [[publishedRow]] = await pool.query(`SELECT COUNT(*) AS published FROM articles WHERE status = 'published'`);
-  const [[categoriesRow]] = await pool.query(`SELECT COUNT(*) AS total FROM categories`);
+  const [[totalArticlesRow]] = await pool.query(
+    `SELECT COUNT(*) AS total FROM articles`,
+  );
+  const [[publishedRow]] = await pool.query(
+    `SELECT COUNT(*) AS published FROM articles WHERE status = 'published'`,
+  );
+  const [[categoriesRow]] = await pool.query(
+    `SELECT COUNT(*) AS total FROM categories`,
+  );
 
   const [[viewsTodayRow]] = await pool.query(
     `SELECT COUNT(*) AS views_today FROM article_views WHERE created_at >= CURDATE()`,
@@ -40,6 +50,15 @@ export async function GET(req) {
 
   const [[views7Row]] = await pool.query(
     `SELECT COUNT(*) AS views_7d FROM article_views WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`,
+  );
+
+  const [[viewsTotalRow]] = await pool.query(
+    `SELECT COUNT(*) AS views_total FROM article_views`,
+  );
+
+  // unique logged-in users in last 7d
+  const [[uniqueUsers7]] = await pool.query(
+    `SELECT COUNT(DISTINCT user_id) AS unique_user_views_7d FROM article_views WHERE user_id IS NOT NULL AND created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`,
   );
 
   const [topArticles] = await pool.query(
@@ -64,6 +83,8 @@ export async function GET(req) {
     categories: categoriesRow.total || 0,
     views_today: viewsTodayRow.views_today || 0,
     views_7d: views7Row.views_7d || 0,
+    views_total: viewsTotalRow.views_total || 0,
+    unique_user_views_7d: uniqueUsers7.unique_user_views_7d || 0,
     top_articles: topArticles || [],
   };
 

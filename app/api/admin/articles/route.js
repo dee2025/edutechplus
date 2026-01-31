@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 
 function getToken(req) {
-  return req.cookies.get("auth_token")?.value;
+  return req.cookies.get("admin_auth_token")?.value;
 }
 
 /**
@@ -52,6 +52,10 @@ export async function POST(req) {
   const {
     title,
     slug,
+    subtitle,
+    canonical_url,
+    tags,
+    content_format,
     excerpt,
     content,
     featured_image,
@@ -71,14 +75,20 @@ export async function POST(req) {
   const status = role === "super_admin" ? "published" : "draft";
   const publishedAt = status === "published" ? new Date() : null;
 
-  const [result] = await pool.query(
-    `
+  let result;
+  try {
+    [result] = await pool.query(
+      `
         INSERT INTO articles
         (
             author_id,
             category_id,
             title,
             slug,
+            subtitle,
+            canonical_url,
+            tags,
+            content_format,
             excerpt,
             content,
             featured_image,
@@ -88,23 +98,37 @@ export async function POST(req) {
             seo_description,
             read_time
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
-    [
-      authorId,
-      category_id || null,
-      title,
-      slug,
-      excerpt || null,
-      content,
-      featured_image || null,
-      status,
-      publishedAt,
-      seo_title || null,
-      seo_description || null,
-      read_time || null,
-    ],
-  );
+      [
+        authorId,
+        category_id || null,
+        title,
+        slug,
+        subtitle || null,
+        canonical_url || null,
+        tags || null,
+        content_format || "html",
+        excerpt || null,
+        content,
+        featured_image || null,
+        status,
+        publishedAt,
+        seo_title || null,
+        seo_description || null,
+        read_time || null,
+      ],
+    );
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      {
+        message:
+          "Failed to create article. Confirm DB has the new columns via migration.",
+      },
+      { status: 500 },
+    );
+  }
 
   if (result.affectedRows != 0) {
     const [updateTable] = await pool.query(

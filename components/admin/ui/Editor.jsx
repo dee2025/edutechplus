@@ -1,3 +1,4 @@
+"use client";
 import {
   IconAlignCenter,
   IconAlignJustified,
@@ -23,6 +24,7 @@ import {
   IconList,
   IconListCheck,
   IconListNumbers,
+  IconPhoto,
   IconPhotoPlus,
   IconRowInsertBottom,
   IconRowInsertTop,
@@ -33,7 +35,6 @@ import {
   IconTableMinus,
   IconTablePlus,
   IconUnderline,
-  IconPhoto,
 } from "@tabler/icons-react";
 import Blockquote from "@tiptap/extension-blockquote";
 import Bold from "@tiptap/extension-bold";
@@ -56,7 +57,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Strike from "@tiptap/extension-strike";
 import Subscript from "@tiptap/extension-subscript";
 import Superscript from "@tiptap/extension-superscript";
-import Table from "@tiptap/extension-table";
+import { Table } from "@tiptap/extension-table";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
@@ -64,7 +65,7 @@ import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import Text from "@tiptap/extension-text";
 import TextAlign from "@tiptap/extension-text-align";
-import TextStyle from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor } from "@tiptap/react";
 import axios from "axios";
@@ -117,129 +118,135 @@ const LinkedImage = Image.extend({
 });
 
 export default ({ content, onChange }) => {
-  const editor = useEditor({
-    extensions: [
-      Document,
-      Paragraph,
-      Text,
-      Image,
-      Dropcursor,
-      BulletList,
-      ListItem,
-      Heading.configure({
-        levels: [1, 2, 3],
-      }),
-      OrderedList,
-      Bold,
-      Underline,
-      TextAlign.configure({
-        types: ["heading", "paragraph", "table"],
-      }),
-      Italic,
-      Table.configure({
-        resizable: true,
-      }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      Blockquote,
-      HorizontalRule,
-      HardBreak,
-      Code,
-      Highlight.configure({ multicolor: true }),
-      Strike,
-      History,
-      TextStyle,
-      Color,
-      TaskList,
-      TaskItem.configure({
-        nested: true,
-      }),
-      LinkedImage, // instead of default Image
-      Link,
-      Subscript,
-      Superscript,
-      Placeholder.configure({
-        placeholder: "Write Content...",
-      }),
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
-        defaultProtocol: "https",
-        protocols: ["http", "https"],
-        isAllowedUri: (url, ctx) => {
-          try {
-            // construct URL
-            const parsedUrl = url.includes(":")
-              ? new URL(url)
-              : new URL(`${ctx.defaultProtocol}://${url}`);
+  const editor = useEditor(
+    {
+      extensions: [
+        Document,
+        Paragraph,
+        Text,
+        Image,
+        Dropcursor,
+        BulletList,
+        ListItem,
+        Heading.configure({
+          levels: [1, 2, 3],
+        }),
+        OrderedList,
+        Bold,
+        Underline,
+        TextAlign.configure({
+          types: ["heading", "paragraph", "table"],
+        }),
+        Italic,
+        Table.configure({
+          resizable: true,
+        }),
+        TableRow,
+        TableHeader,
+        TableCell,
+        Blockquote,
+        HorizontalRule,
+        HardBreak,
+        Code,
+        Highlight.configure({ multicolor: true }),
+        Strike,
+        History,
+        TextStyle,
+        Color,
+        TaskList,
+        TaskItem.configure({
+          nested: true,
+        }),
+        LinkedImage, // instead of default Image
+        Link,
+        Subscript,
+        Superscript,
+        Placeholder.configure({
+          placeholder: "Write Content...",
+        }),
+        Link.configure({
+          openOnClick: false,
+          autolink: true,
+          defaultProtocol: "https",
+          protocols: ["http", "https"],
+          isAllowedUri: (url, ctx) => {
+            try {
+              // construct URL
+              const parsedUrl = url.includes(":")
+                ? new URL(url)
+                : new URL(`${ctx.defaultProtocol}://${url}`);
 
-            // use default validation
-            if (!ctx.defaultValidate(parsedUrl.href)) {
+              // use default validation
+              if (!ctx.defaultValidate(parsedUrl.href)) {
+                return false;
+              }
+
+              // disallowed protocols
+              const disallowedProtocols = ["ftp", "file", "mailto"];
+              const protocol = parsedUrl.protocol.replace(":", "");
+
+              if (disallowedProtocols.includes(protocol)) {
+                return false;
+              }
+
+              // only allow protocols specified in ctx.protocols
+              const allowedProtocols = ctx.protocols.map((p) =>
+                typeof p === "string" ? p : p.scheme,
+              );
+
+              if (!allowedProtocols.includes(protocol)) {
+                return false;
+              }
+
+              // disallowed domains
+              const disallowedDomains = [
+                "example-phishing.com",
+                "malicious-site.net",
+              ];
+              const domain = parsedUrl.hostname;
+
+              if (disallowedDomains.includes(domain)) {
+                return false;
+              }
+
+              // all checks have passed
+              return true;
+            } catch {
               return false;
             }
+          },
+          shouldAutoLink: (url) => {
+            try {
+              // construct URL
+              const parsedUrl = url.includes(":")
+                ? new URL(url)
+                : new URL(`https://${url}`);
 
-            // disallowed protocols
-            const disallowedProtocols = ["ftp", "file", "mailto"];
-            const protocol = parsedUrl.protocol.replace(":", "");
+              // only auto-link if the domain is not in the disallowed list
+              const disallowedDomains = [
+                "example-no-autolink.com",
+                "another-no-autolink.com",
+              ];
+              const domain = parsedUrl.hostname;
 
-            if (disallowedProtocols.includes(protocol)) {
+              return !disallowedDomains.includes(domain);
+            } catch {
               return false;
             }
+          },
+        }),
+      ],
 
-            // only allow protocols specified in ctx.protocols
-            const allowedProtocols = ctx.protocols.map((p) =>
-              typeof p === "string" ? p : p.scheme
-            );
+      content,
+      onUpdate: ({ editor }) => {
+        onChange(editor.getHTML());
+      },
 
-            if (!allowedProtocols.includes(protocol)) {
-              return false;
-            }
-
-            // disallowed domains
-            const disallowedDomains = [
-              "example-phishing.com",
-              "malicious-site.net",
-            ];
-            const domain = parsedUrl.hostname;
-
-            if (disallowedDomains.includes(domain)) {
-              return false;
-            }
-
-            // all checks have passed
-            return true;
-          } catch {
-            return false;
-          }
-        },
-        shouldAutoLink: (url) => {
-          try {
-            // construct URL
-            const parsedUrl = url.includes(":")
-              ? new URL(url)
-              : new URL(`https://${url}`);
-
-            // only auto-link if the domain is not in the disallowed list
-            const disallowedDomains = [
-              "example-no-autolink.com",
-              "another-no-autolink.com",
-            ];
-            const domain = parsedUrl.hostname;
-
-            return !disallowedDomains.includes(domain);
-          } catch {
-            return false;
-          }
-        },
-      }),
-    ],
-
-    content,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      // Prevent Tiptap from rendering during SSR to avoid hydration mismatches
+      immediatelyRender: false,
     },
-  });
+    [],
+  );
 
   const setLink = useCallback(() => {
     const previousUrl = editor.getAttributes("link").href;
@@ -275,22 +282,20 @@ export default ({ content, onChange }) => {
     formData.append("file", file);
 
     try {
-      // Upload the image using Axios
-      const response = await axios.post(
-        `/api/adm/upload-blog-content`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      if (response.data.success) {
-        return response.data.imageName; // The file name returned by the server
+      // Upload the image using the existing admin upload API
+      const response = await axios.post(`/api/admin/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      // response expected: { url: 'https://...' }
+      if (response.data && response.data.url) {
+        return response.data.url;
       } else {
         throw new Error("Image upload failed");
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      throw error; // rethrow the error if you want to handle it further up
+      throw error;
     }
   };
 
@@ -307,11 +312,7 @@ export default ({ content, onChange }) => {
       if (file) {
         try {
           const imageUrl = await uploadImage(file);
-          editor
-            .chain()
-            .focus()
-            .setImage({ src: `/api/images/blogContentImages/${imageUrl}` })
-            .run();
+          editor.chain().focus().setImage({ src: imageUrl }).run();
           onChange(editor.getHTML());
         } catch (error) {
           console.error("Error adding image:", error);

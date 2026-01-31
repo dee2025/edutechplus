@@ -1,16 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function POST() {
-    const response = NextResponse.json({ message: 'Logged out' });
+  const response = NextResponse.json({ message: "Logged out" });
 
-    // 🔥 Clear the admin token cookie
-    response.cookies.set({
-        name: 'admin_token',
-        value: '',
-        httpOnly: true,
-        path: '/',
-        maxAge: 0,
-    });
+  // 🔥 Clear the admin auth cookie
+  response.cookies.set({
+    name: "admin_auth_token",
+    value: "",
+    httpOnly: true,
+    path: "/",
+    maxAge: 0,
+  });
 
-    return response;
+  return response;
 }

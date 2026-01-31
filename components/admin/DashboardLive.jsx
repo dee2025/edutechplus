@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import StatsCard from "./StatsCard";
+import { CheckCircle, Eye, FileText, RefreshCcw } from "lucide-react";
 import Link from "next/link";
-import { FileText, CheckCircle, Layers, Eye, RefreshCcw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import StatsCard from "./StatsCard";
 
 export default function DashboardLive() {
   const [metrics, setMetrics] = useState({
@@ -12,6 +12,8 @@ export default function DashboardLive() {
     categories: 0,
     views_today: 0,
     views_7d: 0,
+    views_total: 0,
+    unique_user_views_7d: 0,
     top_articles: [],
   });
   const [loading, setLoading] = useState(true);
@@ -64,16 +66,34 @@ export default function DashboardLive() {
 
       {/* STATS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatsCard title="Total Articles" value={metrics.total_articles.toLocaleString()} icon={FileText} />
-        <StatsCard title="Published" value={metrics.published.toLocaleString()} icon={CheckCircle} />
-        <StatsCard title="Categories" value={metrics.categories.toLocaleString()} icon={Layers} />
-        <StatsCard title="Views Today" value={metrics.views_today.toLocaleString()} icon={Eye} />
+        <StatsCard
+          title="Total Articles"
+          value={metrics.total_articles.toLocaleString()}
+          icon={FileText}
+        />
+        <StatsCard
+          title="Published"
+          value={metrics.published.toLocaleString()}
+          icon={CheckCircle}
+        />
+        <StatsCard
+          title="Total views"
+          value={metrics.views_total.toLocaleString()}
+          icon={Eye}
+        />
+        <StatsCard
+          title="Views Today"
+          value={metrics.views_today.toLocaleString()}
+          icon={Eye}
+        />
       </div>
 
       {/* Additional metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-[#111827] rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-gray-300">Top articles (7d)</h3>
+          <h3 className="text-sm font-semibold text-gray-300">
+            Top articles (7d)
+          </h3>
 
           {loading ? (
             <p className="text-gray-400 mt-4">Loading top articles...</p>
@@ -82,13 +102,21 @@ export default function DashboardLive() {
               {metrics.top_articles.map((a) => (
                 <li key={a.id} className="flex items-center justify-between">
                   <div>
-                    <Link href={`/articles/${a.slug}`} className="text-sm text-gray-100 hover:underline">
+                    <Link
+                      href={`/articles/${a.slug}`}
+                      className="text-sm text-gray-100 hover:underline"
+                    >
                       {a.title}
                     </Link>
-                    <div className="text-xs text-gray-400">{a.views || 0} views</div>
+                    <div className="text-xs text-gray-400">
+                      {a.views || 0} views
+                    </div>
                   </div>
                   <div>
-                    <Link href={`/admin/articles/edit/${a.id}`} className="text-xs text-cyan-300 hover:underline">
+                    <Link
+                      href={`/admin/articles/edit/${a.id}`}
+                      className="text-xs text-cyan-300 hover:underline"
+                    >
                       Edit
                     </Link>
                   </div>
@@ -103,16 +131,36 @@ export default function DashboardLive() {
         <div className="bg-[#111827] rounded-xl p-4">
           <h3 className="text-sm font-semibold text-gray-300">Traffic</h3>
           <div className="mt-3 text-gray-400 text-sm">
-            <div>Today: <strong className="text-gray-100">{metrics.views_today.toLocaleString()}</strong></div>
-            <div>Last 7 days: <strong className="text-gray-100">{metrics.views_7d.toLocaleString()}</strong></div>
+            <div>
+              Today:{" "}
+              <strong className="text-gray-100">
+                {metrics.views_today.toLocaleString()}
+              </strong>
+            </div>
+            <div>
+              Last 7 days:{" "}
+              <strong className="text-gray-100">
+                {metrics.views_7d.toLocaleString()}
+              </strong>
+            </div>
+            <div className="mt-2 text-xs text-gray-400">
+              Unique logged-in users (7d):{" "}
+              <strong className="text-gray-100">
+                {metrics.unique_user_views_7d.toLocaleString()}
+              </strong>
+            </div>
           </div>
 
           <div className="mt-4">
-            <Link href="/admin/homepage" className="text-sm text-cyan-300 hover:underline">Homepage settings</Link>
+            <Link
+              href="/admin/homepage"
+              className="text-sm text-cyan-300 hover:underline"
+            >
+              Homepage settings
+            </Link>
           </div>
         </div>
       </div>
-
     </div>
   );
 }

@@ -1,10 +1,47 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
-
 
 body {
   background: var(--background);
   color: var(--foreground);
   /* font-family: "Open Sans", sans-serif !important; */
-   font-family: "Montserrat", sans-serif;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* Streak calendar animation */
+@keyframes streakFade {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* small enhancement for month labels */
+.streak-month-label {
+  font-size: 10px;
+  color: rgba(148, 163, 184, 1);
+  height: 12px;
+  line-height: 12px;
+}
+
+/* tooltip for streak calendar */
+.streak-tooltip {
+  min-width: 120px;
+  pointer-events: none;
+}
+
+/* small hover shadow for cells */
+.streak-cell-hover {
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+.streak-cell-hover:focus,
+.streak-cell-hover:hover {
+  transform: scale(1.12);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
 }

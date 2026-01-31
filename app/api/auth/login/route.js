@@ -15,19 +15,18 @@ export async function POST(req) {
     }
 
     const [rows] = await pool.query(
-      "SELECT * FROM admins WHERE email = ? AND is_active = 1",
+      "SELECT * FROM users WHERE email = ? AND is_active = 1",
       [email],
     );
-
-    if (rows.length === 0) {
+    if (!rows.length) {
       return NextResponse.json(
         { message: "Invalid credentials" },
         { status: 401 },
       );
     }
 
-    const admin = rows[0];
-    const isValid = await bcrypt.compare(password, admin.password);
+    const user = rows[0];
+    const isValid = await bcrypt.compare(password, user.password);
 
     if (!isValid) {
       return NextResponse.json(
@@ -37,32 +36,27 @@ export async function POST(req) {
     }
 
     const token = await signToken({
-      id: admin.id,
-      role: admin.role,
-      email: admin.email,
-      author_id: admin.author_id,
+      id: user.id,
+      role: "user",
+      email: user.email,
     });
 
     const response = NextResponse.json({
       message: "Login successful",
-      admin: {
-        id: admin.id,
-        name: admin.name,
-        role: admin.role,
-      },
+      user: { id: user.id, name: user.name, email: user.email },
     });
 
-    // Use a separate cookie name for admin sessions to prevent regular user sessions from accessing admin routes
-    response.cookies.set("admin_auth_token", token, {
+    response.cookies.set("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });
 
     return response;
-  } catch (error) {
+  } catch (err) {
+    console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
