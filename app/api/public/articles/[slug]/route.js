@@ -6,17 +6,17 @@ export async function GET(req, { params }) {
   const slug = prarm.slug;
 
   // Ensure article_views exists (safety) and then fetch article + related aggregated views
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS article_views (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      article_id INT NOT NULL,
-      user_id INT DEFAULT NULL,
-      ip VARCHAR(45) DEFAULT NULL,
-      user_agent VARCHAR(512) DEFAULT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      INDEX idx_article_created (article_id, created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  `);
+  // await pool.query(`
+  //   CREATE TABLE IF NOT EXISTS article_views (
+  //     id INT AUTO_INCREMENT PRIMARY KEY,
+  //     article_id INT NOT NULL,
+  //     user_id INT DEFAULT NULL,
+  //     ip VARCHAR(45) DEFAULT NULL,
+  //     user_agent VARCHAR(512) DEFAULT NULL,
+  //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  //     INDEX idx_article_created (article_id, created_at)
+  //   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  // `);
 
   // 📰 Article + Author + Category, plus aggregated views from article_views
   const [[article]] = await pool.query(
