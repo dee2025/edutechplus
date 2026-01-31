@@ -1,11 +1,6 @@
-import dynamic from "next/dynamic";
+"use client";
 
-const TipTapRendererClient = dynamic(() => import("./TipTapRendererClient"), {
-  ssr: false,
-  loading: () => (
-    <div className="text-sm text-gray-400">Rendering article content…</div>
-  ),
-});
+import TipTapRendererClient from "./TipTapRendererClient";
 
 export default function TipTapRenderer({ content, fallback }) {
   // content: HTML or TipTap JSON/HTML string from the editor
