@@ -7,7 +7,7 @@ export async function GET(req, { params }) {
     const param = await params;
     const slug = param.slug;
 
-    const [[article]] = await pool.query(
+    const [[article]] = await pool.execute(
       'SELECT id FROM articles WHERE slug = ? AND status = "published"',
       [slug],
     );
@@ -17,7 +17,7 @@ export async function GET(req, { params }) {
         { status: 404 },
       );
 
-    const [rows] = await pool.query(
+    const [rows] = await pool.execute(
       `SELECT c.id, c.content, c.parent_id, c.created_at, u.id AS user_id, u.name AS user_name, u.avatar_url
        FROM comments c
        JOIN users u ON u.id = c.user_id
@@ -45,7 +45,7 @@ export async function POST(req, { params }) {
     const param = await params;
     const slug = param.slug;
 
-    const [[article]] = await pool.query(
+    const [[article]] = await pool.execute(
       'SELECT id FROM articles WHERE slug = ? AND status = "published"',
       [slug],
     );
@@ -66,7 +66,7 @@ export async function POST(req, { params }) {
     }
 
     // Rate limiting: max 5 comments/minute and 1 comment every 15 seconds per user
-    const [[recentCount]] = await pool.query(
+    const [[recentCount]] = await pool.execute(
       "SELECT COUNT(*) AS cnt FROM comments WHERE user_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 1 MINUTE)",
       [userId],
     );
@@ -77,7 +77,7 @@ export async function POST(req, { params }) {
       );
     }
 
-    const [lastRow] = await pool.query(
+    const [lastRow] = await pool.execute(
       "SELECT created_at FROM comments WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
       [userId],
     );
@@ -116,7 +116,7 @@ export async function POST(req, { params }) {
 
     // Validate parent_id if present (must be an existing comment on same article)
     if (parent_id) {
-      const [[parent]] = await pool.query(
+      const [[parent]] = await pool.execute(
         "SELECT id FROM comments WHERE id = ? AND article_id = ? AND is_deleted = 0",
         [parent_id, article.id],
       );
@@ -129,7 +129,7 @@ export async function POST(req, { params }) {
     }
 
     try {
-      const [result] = await pool.query(
+      const [result] = await pool.execute(
         "INSERT INTO comments (article_id, user_id, parent_id, content) VALUES (?, ?, ?, ?)",
         [article.id, userId, parent_id || null, sanitizedContent],
       );

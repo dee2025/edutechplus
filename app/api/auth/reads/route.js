@@ -26,7 +26,7 @@ export async function POST(req) {
       return NextResponse.json({ message: "Missing slug" }, { status: 400 });
 
     // find article id if exists
-    const [[article]] = await pool.query(
+    const [[article]] = await pool.execute(
       "SELECT id FROM articles WHERE slug = ? AND status = 'published'",
       [slug],
     );
@@ -34,7 +34,7 @@ export async function POST(req) {
 
     // insert or update (unique constraint prevents duplicates per day)
     try {
-      const [res] = await pool.query(
+      const [res] = await pool.execute(
         `INSERT INTO user_reads (user_id, article_id, slug, title, read_date) VALUES (?, ?, ?, ?, CURDATE()) ON DUPLICATE KEY UPDATE created_at = NOW()`,
         [userId, articleId, slug, title],
       );
@@ -87,7 +87,7 @@ export async function GET(req) {
     const startDate = start.toISOString().slice(0, 10);
 
     if (listMode) {
-      const [rows] = await pool.query(
+      const [rows] = await pool.execute(
         `SELECT id, article_id, slug, title, read_date, created_at FROM user_reads WHERE user_id = ? AND read_date >= ? ORDER BY read_date DESC, created_at DESC LIMIT ?`,
         [userId, startDate, limit],
       );
@@ -118,7 +118,7 @@ export async function GET(req) {
     const summary = url.searchParams.get("summary");
 
     if (summary === "streak") {
-      const [rows2] = await pool.query(
+      const [rows2] = await pool.execute(
         `SELECT DISTINCT read_date FROM user_reads WHERE user_id = ? AND read_date >= ? ORDER BY read_date ASC`,
         [userId, startDate],
       );
@@ -166,7 +166,7 @@ export async function GET(req) {
       });
     }
 
-    const [rows] = await pool.query(
+    const [rows] = await pool.execute(
       `SELECT read_date, COUNT(*) AS cnt FROM user_reads WHERE user_id = ? AND read_date >= ? GROUP BY read_date`,
       [userId, startDate],
     );
@@ -204,16 +204,17 @@ export async function DELETE(req) {
       const start = new Date();
       start.setDate(start.getDate() - days + 1);
       const startDate = start.toISOString().slice(0, 10);
-      const [res] = await pool.query(
+      const [res] = await pool.execute(
         `DELETE FROM user_reads WHERE user_id = ? AND read_date >= ?`,
         [userId, startDate],
       );
       return NextResponse.json({ deleted: res.affectedRows || 0 });
     }
 
-    const [res] = await pool.query(`DELETE FROM user_reads WHERE user_id = ?`, [
-      userId,
-    ]);
+    const [res] = await pool.execute(
+      `DELETE FROM user_reads WHERE user_id = ?`,
+      [userId],
+    );
     return NextResponse.json({ deleted: res.affectedRows || 0 });
   } catch (err) {
     console.error(err);

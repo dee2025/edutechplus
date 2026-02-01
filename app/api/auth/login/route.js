@@ -14,7 +14,7 @@ export async function POST(req) {
       );
     }
 
-    const [rows] = await pool.query(
+    const [rows] = await pool.execute(
       "SELECT * FROM users WHERE email = ? AND is_active = 1",
       [email],
     );

@@ -14,7 +14,7 @@ export async function GET(req) {
 
   jwt.verify(token, process.env.JWT_SECRET);
 
-  const [rows] = await pool.query(`
+  const [rows] = await pool.execute(`
         SELECT
             a.id,
             a.title,

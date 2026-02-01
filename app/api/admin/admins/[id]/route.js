@@ -23,7 +23,7 @@ export async function GET(req, { params }) {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
-  const [rows] = await pool.query(
+  const [rows] = await pool.execute(
     `SELECT id, name, email, role, is_active, created_at
          FROM admins
          WHERE id = ?`,
@@ -72,7 +72,7 @@ export async function PUT(req, { params }) {
     values = [name, email, hashed, role, is_active, id];
   }
 
-  await pool.query(query, values);
+  await pool.execute(query, values);
 
   return NextResponse.json({ message: "Admin updated" });
 }
@@ -94,7 +94,7 @@ export async function DELETE(req, { params }) {
   }
 
   // Safety: prevent deleting admin who owns articles
-  const [[row]] = await pool.query(
+  const [[row]] = await pool.execute(
     "SELECT COUNT(*) AS total FROM articles WHERE author_id = ?",
     [id],
   );
@@ -106,7 +106,7 @@ export async function DELETE(req, { params }) {
     );
   }
 
-  await pool.query("DELETE FROM admins WHERE id = ?", [id]);
+  await pool.execute("DELETE FROM admins WHERE id = ?", [id]);
 
   return NextResponse.json({ message: "Admin deleted" });
 }

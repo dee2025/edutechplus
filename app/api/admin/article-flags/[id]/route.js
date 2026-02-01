@@ -27,7 +27,7 @@ export async function PUT(req, { params }) {
     trending_order,
   } = await req.json();
 
-  await pool.query(
+  await pool.execute(
     `
         UPDATE article_flags
         SET

@@ -21,7 +21,9 @@ export async function GET(req, { params }) {
 
   jwt.verify(token, process.env.JWT_SECRET);
 
-  const [rows] = await pool.query("SELECT * FROM articles WHERE id = ?", [id]);
+  const [rows] = await pool.execute("SELECT * FROM articles WHERE id = ?", [
+    id,
+  ]);
 
   if (!rows.length) {
     return NextResponse.json({ message: "Not found" }, { status: 404 });
@@ -72,7 +74,7 @@ export async function PUT(req, { params }) {
 
   // 🔐 Ownership check (EDITORS can edit only their articles)
   if (role === "editor") {
-    const [[article]] = await pool.query(
+    const [[article]] = await pool.execute(
       "SELECT author_id FROM articles WHERE id = ?",
       [id],
     );
@@ -95,7 +97,7 @@ export async function PUT(req, { params }) {
   }
 
   try {
-    await pool.query(
+    await pool.execute(
       `
         UPDATE articles
         SET
@@ -165,9 +167,9 @@ export async function DELETE(req, { params }) {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
-  await pool.query("DELETE FROM articles WHERE id = ?", [id]);
+  await pool.execute("DELETE FROM articles WHERE id = ?", [id]);
 
-  await pool.query("DELETE FROM article_flags WHERE article_id = ?", [id]);
+  await pool.execute("DELETE FROM article_flags WHERE article_id = ?", [id]);
 
   return NextResponse.json({ message: "Article deleted" });
 }

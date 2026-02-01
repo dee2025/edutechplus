@@ -2,24 +2,24 @@ import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
-    const param = await params;
-    const { slug } = param;
+  const param = await params;
+  const { slug } = param;
 
-    // 📂 Category
-    const [[category]] = await pool.query(
-        `SELECT id, name, description
+  // 📂 Category
+  const [[category]] = await pool.execute(
+    `SELECT id, name, description
          FROM categories
          WHERE slug = ? AND is_active = 1`,
-        [slug]
-    );
+    [slug],
+  );
 
-    if (!category) {
-        return NextResponse.json({ message: "Not found" }, { status: 404 });
-    }
+  if (!category) {
+    return NextResponse.json({ message: "Not found" }, { status: 404 });
+  }
 
-    // 📰 Articles under category
-    const [articles] = await pool.query(
-        `
+  // 📰 Articles under category
+  const [articles] = await pool.execute(
+    `
         SELECT 
             a.id,
             a.title,
@@ -35,23 +35,23 @@ export async function GET(req, { params }) {
           AND a.status = 'published'
         ORDER BY a.published_at DESC
         `,
-        [category.id]
-    );
+    [category.id],
+  );
 
-    // 🔥 Trending (sidebar)
-    const [trending] = await pool.query(
-        `
+  // 🔥 Trending (sidebar)
+  const [trending] = await pool.execute(
+    `
         SELECT id, title, slug
         FROM articles
         WHERE status = 'published'
         ORDER BY published_at DESC
         LIMIT 5
-        `
-    );
+        `,
+  );
 
-    return NextResponse.json({
-        category,
-        articles,
-        trending,
-    });
+  return NextResponse.json({
+    category,
+    articles,
+    trending,
+  });
 }

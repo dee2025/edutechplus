@@ -20,7 +20,7 @@ export async function PUT(req, { params }) {
     const id = (await params).id;
     const { is_approved } = await req.json();
 
-    await pool.query("UPDATE comments SET is_approved = ? WHERE id = ?", [
+    await pool.execute("UPDATE comments SET is_approved = ? WHERE id = ?", [
       is_approved ? 1 : 0,
       id,
     ]);
@@ -44,7 +44,7 @@ export async function DELETE(req, { params }) {
     }
 
     const id = (await params).id;
-    await pool.query("DELETE FROM comments WHERE id = ?", [id]);
+    await pool.execute("DELETE FROM comments WHERE id = ?", [id]);
 
     return NextResponse.json({ message: "Deleted" });
   } catch (err) {

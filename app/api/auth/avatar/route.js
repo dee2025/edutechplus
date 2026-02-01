@@ -52,7 +52,7 @@ export async function POST(req) {
     });
 
     // Persist avatar URL to user record
-    await pool.query("UPDATE users SET avatar_url = ? WHERE id = ?", [
+    await pool.execute("UPDATE users SET avatar_url = ? WHERE id = ?", [
       result.secure_url,
       userId,
     ]);

@@ -10,7 +10,7 @@ export async function GET(req) {
     const payload = await verifyToken(token);
     const userId = payload.id;
 
-    const [rows] = await pool.query(
+    const [rows] = await pool.execute(
       "SELECT id, name, email, avatar_url, created_at FROM users WHERE id = ?",
       [userId],
     );

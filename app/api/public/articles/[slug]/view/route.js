@@ -6,7 +6,7 @@ export async function POST(req, { params }) {
   const slug = param.slug;
 
   // Ensure table exists (safe no-op if created by migration)
-  // await pool.query(`
+  // await pool.execute(`
   //   CREATE TABLE IF NOT EXISTS article_views (
   //     id INT AUTO_INCREMENT PRIMARY KEY,
   //     article_id INT NOT NULL,
@@ -21,7 +21,7 @@ export async function POST(req, { params }) {
   // `);
 
   // Find article id (published)
-  const [[article]] = await pool.query(
+  const [[article]] = await pool.execute(
     `SELECT id FROM articles WHERE slug = ? AND status = 'published'`,
     [slug],
   );
@@ -55,7 +55,7 @@ export async function POST(req, { params }) {
   // Perform an atomic conditional insert to avoid race conditions that can lead to duplicate rows
   try {
     if (userId) {
-      const [res] = await pool.query(
+      const [res] = await pool.execute(
         `INSERT INTO article_views (article_id, user_id, ip, user_agent)
          SELECT ?, ?, ?, ? FROM DUAL
          WHERE NOT EXISTS (
@@ -66,7 +66,7 @@ export async function POST(req, { params }) {
       if (res && (res.affectedRows || res.affected_rows || 0) > 0)
         inserted = true;
     } else if (ip) {
-      const [res] = await pool.query(
+      const [res] = await pool.execute(
         `INSERT INTO article_views (article_id, user_id, ip, user_agent)
          SELECT ?, NULL, ?, ? FROM DUAL
          WHERE NOT EXISTS (
@@ -77,7 +77,7 @@ export async function POST(req, { params }) {
       if (res && (res.affectedRows || res.affected_rows || 0) > 0)
         inserted = true;
     } else if (ua) {
-      const [res] = await pool.query(
+      const [res] = await pool.execute(
         `INSERT INTO article_views (article_id, user_id, ip, user_agent)
          SELECT ?, NULL, NULL, ? FROM DUAL
          WHERE NOT EXISTS (
@@ -89,7 +89,7 @@ export async function POST(req, { params }) {
         inserted = true;
     } else {
       // No identifying token (very rare). Insert unconditionally.
-      await pool.query(
+      await pool.execute(
         `INSERT INTO article_views (article_id, user_id, ip, user_agent) VALUES (?, NULL, NULL, NULL)`,
         [article.id],
       );
@@ -100,11 +100,11 @@ export async function POST(req, { params }) {
   }
 
   // Return aggregated views: total and today
-  const [[totalRow]] = await pool.query(
+  const [[totalRow]] = await pool.execute(
     `SELECT COUNT(*) AS views_total FROM article_views WHERE article_id = ?`,
     [article.id],
   );
-  const [[todayRow]] = await pool.query(
+  const [[todayRow]] = await pool.execute(
     `SELECT COUNT(*) AS views_today FROM article_views WHERE article_id = ? AND created_at >= CURDATE()`,
     [article.id],
   );

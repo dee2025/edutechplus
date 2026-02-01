@@ -10,7 +10,7 @@ export async function GET(req) {
 
   jwt.verify(token, process.env.JWT_SECRET);
 
-  const [rows] = await pool.query(
+  const [rows] = await pool.execute(
     "SELECT * FROM categories ORDER BY created_at DESC",
   );
 
@@ -24,7 +24,7 @@ export async function POST(req) {
   }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  
+
   if (decoded.role !== "super_admin") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
@@ -38,7 +38,7 @@ export async function POST(req) {
     );
   }
 
-  await pool.query(
+  await pool.execute(
     "INSERT INTO categories (name, slug, description) VALUES (?, ?, ?)",
     [name, slug, description || null],
   );

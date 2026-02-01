@@ -16,7 +16,7 @@ export async function PUT(req, { params }) {
     const id = param.id;
 
     // ensure article exists
-    const [[article]] = await pool.query(
+    const [[article]] = await pool.execute(
       'SELECT id FROM articles WHERE slug = ? AND status = "published"',
       [slug],
     );
@@ -27,7 +27,7 @@ export async function PUT(req, { params }) {
       );
 
     // ensure comment exists and belongs to article
-    const [[comment]] = await pool.query(
+    const [[comment]] = await pool.execute(
       "SELECT id, user_id, is_deleted FROM comments WHERE id = ? AND article_id = ?",
       [id, article.id],
     );
@@ -51,7 +51,7 @@ export async function PUT(req, { params }) {
       );
 
     // Rate limiting edits: max 10 edits across user's comments per minute
-    const [[editCount]] = await pool.query(
+    const [[editCount]] = await pool.execute(
       "SELECT COUNT(*) AS cnt FROM comments WHERE user_id = ? AND updated_at >= DATE_SUB(NOW(), INTERVAL 1 MINUTE)",
       [userId],
     );
@@ -82,7 +82,7 @@ export async function PUT(req, { params }) {
       );
     }
 
-    await pool.query(
+    await pool.execute(
       "UPDATE comments SET content = ?, updated_at = NOW() WHERE id = ?",
       [sanitizedContent, id],
     );
@@ -108,7 +108,7 @@ export async function DELETE(req, { params }) {
     const id = param.id;
 
     // ensure article exists
-    const [[article]] = await pool.query(
+    const [[article]] = await pool.execute(
       'SELECT id FROM articles WHERE slug = ? AND status = "published"',
       [slug],
     );
@@ -119,7 +119,7 @@ export async function DELETE(req, { params }) {
       );
 
     // ensure comment exists and belongs to article
-    const [[comment]] = await pool.query(
+    const [[comment]] = await pool.execute(
       "SELECT id, user_id, is_deleted FROM comments WHERE id = ? AND article_id = ?",
       [id, article.id],
     );
@@ -138,7 +138,7 @@ export async function DELETE(req, { params }) {
     if (comment.user_id !== userId)
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
 
-    await pool.query("UPDATE comments SET is_deleted = 1 WHERE id = ?", [id]);
+    await pool.execute("UPDATE comments SET is_deleted = 1 WHERE id = ?", [id]);
 
     return NextResponse.json({ message: "Deleted" });
   } catch (err) {

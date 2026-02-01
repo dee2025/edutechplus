@@ -23,7 +23,7 @@ export async function GET(req) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
-    const [rows] = await pool.query(
+    const [rows] = await pool.execute(
       `SELECT c.*, u.name AS user_name, a.title AS article_title, a.slug AS article_slug
        FROM comments c
        JOIN users u ON u.id = c.user_id

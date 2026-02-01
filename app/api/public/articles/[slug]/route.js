@@ -7,7 +7,7 @@ export async function GET(req, { params }) {
 
   try {
     // Ensure article_views exists (safety)
-    await pool.query(`
+    await pool.execute(`
       CREATE TABLE IF NOT EXISTS article_views (
         id INT AUTO_INCREMENT PRIMARY KEY,
         article_id INT NOT NULL,
@@ -20,7 +20,7 @@ export async function GET(req, { params }) {
     `);
 
     // 📰 Article + Author + Category, plus aggregated views from article_views
-    const [[article]] = await pool.query(
+    const [[article]] = await pool.execute(
       `
           SELECT 
               a.*,
@@ -46,7 +46,7 @@ export async function GET(req, { params }) {
     }
 
     // 🔥 Trending articles (sidebar)
-    const [trending] = await pool.query(
+    const [trending] = await pool.execute(
       `
           SELECT id, title, slug
           FROM articles

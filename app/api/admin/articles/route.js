@@ -17,7 +17,7 @@ export async function GET(req) {
 
   jwt.verify(token, process.env.JWT_SECRET);
 
-  const [rows] = await pool.query(`
+  const [rows] = await pool.execute(`
         SELECT 
             a.id,
             a.title,
@@ -77,7 +77,7 @@ export async function POST(req) {
 
   let result;
   try {
-    [result] = await pool.query(
+    [result] = await pool.execute(
       `
         INSERT INTO articles
         (
@@ -131,7 +131,7 @@ export async function POST(req) {
   }
 
   if (result.affectedRows != 0) {
-    const [updateTable] = await pool.query(
+    const [updateTable] = await pool.execute(
       `
         INSERT INTO article_flags
         (

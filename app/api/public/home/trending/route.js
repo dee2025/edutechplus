@@ -2,7 +2,7 @@ import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-    const [rows] = await pool.query(`
+  const [rows] = await pool.execute(`
         SELECT
             a.id,
             a.title,
@@ -22,5 +22,5 @@ export async function GET() {
         LIMIT 6
     `);
 
-    return NextResponse.json(rows);
+  return NextResponse.json(rows);
 }

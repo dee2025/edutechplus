@@ -17,7 +17,7 @@ export async function PUT(req, { params }) {
 
   const { name, slug, description, is_active } = await req.json();
 
-  await pool.query(
+  await pool.execute(
     `UPDATE categories
          SET name=?, slug=?, description=?, is_active=?
          WHERE id=?`,
@@ -41,7 +41,7 @@ export async function DELETE(req, { params }) {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
-  await pool.query("DELETE FROM categories WHERE id = ?", [id]);
+  await pool.execute("DELETE FROM categories WHERE id = ?", [id]);
 
   return NextResponse.json({ message: "Category deleted" });
 }

@@ -19,7 +19,7 @@ export async function GET(req) {
   }
 
   // Ensure the article_views table exists (safe no-op)
-  // await pool.query(`
+  // await pool.execute(`
   //   CREATE TABLE IF NOT EXISTS article_views (
   //     id INT AUTO_INCREMENT PRIMARY KEY,
   //     article_id INT NOT NULL,
@@ -34,34 +34,34 @@ export async function GET(req) {
   // `);
 
   // Run metrics queries
-  const [[totalArticlesRow]] = await pool.query(
+  const [[totalArticlesRow]] = await pool.execute(
     `SELECT COUNT(*) AS total FROM articles`,
   );
-  const [[publishedRow]] = await pool.query(
+  const [[publishedRow]] = await pool.execute(
     `SELECT COUNT(*) AS published FROM articles WHERE status = 'published'`,
   );
-  const [[categoriesRow]] = await pool.query(
+  const [[categoriesRow]] = await pool.execute(
     `SELECT COUNT(*) AS total FROM categories`,
   );
 
-  const [[viewsTodayRow]] = await pool.query(
+  const [[viewsTodayRow]] = await pool.execute(
     `SELECT COUNT(*) AS views_today FROM article_views WHERE created_at >= CURDATE()`,
   );
 
-  const [[views7Row]] = await pool.query(
+  const [[views7Row]] = await pool.execute(
     `SELECT COUNT(*) AS views_7d FROM article_views WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`,
   );
 
-  const [[viewsTotalRow]] = await pool.query(
+  const [[viewsTotalRow]] = await pool.execute(
     `SELECT COUNT(*) AS views_total FROM article_views`,
   );
 
   // unique logged-in users in last 7d
-  const [[uniqueUsers7]] = await pool.query(
+  const [[uniqueUsers7]] = await pool.execute(
     `SELECT COUNT(DISTINCT user_id) AS unique_user_views_7d FROM article_views WHERE user_id IS NOT NULL AND created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`,
   );
 
-  const [topArticles] = await pool.query(
+  const [topArticles] = await pool.execute(
     `
       SELECT a.id, a.title, a.slug, IFNULL(v.views,0) AS views
       FROM articles a
