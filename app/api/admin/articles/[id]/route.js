@@ -14,22 +14,33 @@ export async function GET(req, { params }) {
   const id = param.id;
 
   const token = getToken(req);
-  console.log(token);
   if (!token) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   jwt.verify(token, process.env.JWT_SECRET);
 
-  const [rows] = await pool.execute("SELECT * FROM articles WHERE id = ?", [
-    id,
-  ]);
+  const [article] = await pool.execute(
+    `SELECT a.*, JSON_ARRAYAGG(JSON_OBJECT('id', c.id, 'name', c.name)) AS categories
+     FROM articles a
+     LEFT JOIN categories ac ON ac.article_id = a.id
+     LEFT JOIN categories c ON c.id = ac.category_id
+     WHERE a.id = ?
+     GROUP BY a.id`,
+    [id],
+  );
 
-  if (!rows.length) {
+  if (!article.length) {
     return NextResponse.json({ message: "Not found" }, { status: 404 });
   }
 
-  return NextResponse.json(rows[0]);
+  const result = article[0];
+  result.categories = result.categories
+    ? JSON.parse(result.categories).filter((cat) => cat.name !== null)
+    : [];
+  result.category_ids = result.categories.map((cat) => cat.id);
+
+  return NextResponse.json(result);
 }
 
 /**
@@ -62,7 +73,7 @@ export async function PUT(req, { params }) {
     seo_title,
     seo_description,
     read_time,
-    category_id, // ✅ SINGLE CATEGORY
+    category_ids, // ✅ MULTIPLE CATEGORIES (array)
   } = await req.json();
 
   if (!title || !slug || !content) {
@@ -110,7 +121,6 @@ export async function PUT(req, { params }) {
             excerpt = ?,
             content = ?,
             featured_image = ?,
-            category_id = ?,
             status = ?,
             published_at = ?,
             seo_title = ?,
@@ -128,7 +138,6 @@ export async function PUT(req, { params }) {
         excerpt || null,
         content,
         featured_image || null,
-        category_id || null,
         finalStatus,
         publishedAt,
         seo_title || null,
@@ -137,6 +146,22 @@ export async function PUT(req, { params }) {
         id,
       ],
     );
+
+    // Update categories: delete old ones and insert new ones
+    await pool.execute("DELETE FROM categories WHERE article_id = ?", [id]);
+
+    if (
+      category_ids &&
+      Array.isArray(category_ids) &&
+      category_ids.length > 0
+    ) {
+      for (const catId of category_ids) {
+        await pool.execute(
+          "INSERT INTO categories (article_id, category_id) VALUES (?, ?)",
+          [id, catId],
+        );
+      }
+    }
   } catch (err) {
     console.error(err);
     return NextResponse.json(
@@ -170,6 +195,8 @@ export async function DELETE(req, { params }) {
   await pool.execute("DELETE FROM articles WHERE id = ?", [id]);
 
   await pool.execute("DELETE FROM article_flags WHERE article_id = ?", [id]);
+
+  await pool.execute("DELETE FROM categories WHERE article_id = ?", [id]);
 
   return NextResponse.json({ message: "Article deleted" });
 }

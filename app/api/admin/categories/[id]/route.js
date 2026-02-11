@@ -15,13 +15,13 @@ export async function PUT(req, { params }) {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
-  const { name, slug, description, is_active } = await req.json();
+  const { name, slug, description, is_active, parent_id } = await req.json();
 
   await pool.execute(
     `UPDATE categories
-         SET name=?, slug=?, description=?, is_active=?
+         SET parent_id=?, name=?, slug=?, description=?, is_active=?
          WHERE id=?`,
-    [name, slug, description || null, is_active, id],
+    [parent_id || null, name, slug, description || null, is_active, id],
   );
 
   return NextResponse.json({ message: "Category updated" });

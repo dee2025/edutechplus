@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 
 function getToken(req) {
-  return req.cookies.get("auth_token")?.value;
+  return req.cookies.get("admin_auth_token")?.value;
 }
 
 /**

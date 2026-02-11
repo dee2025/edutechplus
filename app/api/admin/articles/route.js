@@ -22,17 +22,27 @@ export async function GET(req) {
             a.id,
             a.title,
             a.slug,
+            a.featured_image,
             a.status,
             a.created_at,
             ad.name AS author_name,
-            c.name AS category_name
+            JSON_ARRAYAGG(JSON_OBJECT('id', c.id, 'name', c.name)) AS categories
         FROM articles a
         LEFT JOIN admins ad ON ad.id = a.author_id
-        LEFT JOIN categories c ON c.id = a.category_id
+        LEFT JOIN categories c ON c.id = ac.category_id
+        GROUP BY a.id
         ORDER BY a.created_at DESC
     `);
 
-  return NextResponse.json(rows);
+  // Parse categories JSON for each article
+  const parsedRows = rows.map((row) => ({
+    ...row,
+    categories: row.categories
+      ? JSON.parse(row.categories).filter((cat) => cat.name !== null)
+      : [],
+  }));
+
+  return NextResponse.json(parsedRows);
 }
 
 /**
@@ -62,7 +72,7 @@ export async function POST(req) {
     seo_title,
     seo_description,
     read_time,
-    category_id, // ✅ SINGLE CATEGORY
+    category_ids, // ✅ MULTIPLE CATEGORIES (array)
   } = await req.json();
 
   if (!title || !slug || !content) {
@@ -82,7 +92,6 @@ export async function POST(req) {
         INSERT INTO articles
         (
             author_id,
-            category_id,
             title,
             slug,
             subtitle,
@@ -98,11 +107,10 @@ export async function POST(req) {
             seo_description,
             read_time
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       [
         authorId,
-        category_id || null,
         title,
         slug,
         subtitle || null,
@@ -131,6 +139,22 @@ export async function POST(req) {
   }
 
   if (result.affectedRows != 0) {
+    const articleId = result.insertId;
+
+    // Insert categories into junction table
+    if (
+      category_ids &&
+      Array.isArray(category_ids) &&
+      category_ids.length > 0
+    ) {
+      for (const catId of category_ids) {
+        await pool.execute(
+          "INSERT INTO categories (article_id, category_id) VALUES (?, ?)",
+          [articleId, catId],
+        );
+      }
+    }
+
     const [updateTable] = await pool.execute(
       `
         INSERT INTO article_flags
@@ -139,7 +163,7 @@ export async function POST(req) {
         )
         VALUES (?)
         `,
-      [result.insertId],
+      [articleId],
     );
     if (updateTable.affectedRows == 0) {
       return NextResponse.json(

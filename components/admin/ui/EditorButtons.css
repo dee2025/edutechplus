@@ -1,20 +1,62 @@
-.is-active {
-  background-color: #000000; /* Light gray background to indicate active state */
-  border: 1px solid #333; /* Darker border for visibility */
-  color: #fff; /* Dark text color */
-  font-weight: bold; /* Optional: make the text bold */
-}
-
-button {
+.control-group {
+  background: #0b0f19;
+  border: 1px solid #1f2937;
+  padding: 8px;
   border-radius: 8px;
-  padding: 4px 12px;
-  font-size: 12px;
-  margin-left: 4px;
-  border: 1px solid black;
 }
 
-.btnSection{
-    border-radius: 8px;
-    padding: 4px;
-    background-color: rgb(199, 199, 199);
+.control-group .d-flex {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.control-group .btnSection {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.control-group button {
+  background: transparent;
+  color: #cbd5e1; /* gray-300 */
+  border: 1px solid rgba(148, 163, 184, 0.06);
+  padding: 6px 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 120ms ease-in-out;
+}
+
+.control-group button:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: #2dd4bf; /* cyan-400 accent */
+  color: #e6f7f5;
+}
+
+.control-group button.is-active {
+  background: #06b6d4; /* cyan-400 */
+  color: #000;
+  border-color: transparent;
+}
+
+.editor-container {
+  margin-top: 8px;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 14px;
+  background: #0b0f19;
+  min-height: 320px;
+}
+
+.control-group input[type="color"] {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
