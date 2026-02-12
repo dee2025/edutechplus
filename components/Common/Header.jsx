@@ -88,16 +88,20 @@ const Header = () => {
           </div>
 
           {/* Center: Search */}
-          <div className="hidden md:flex flex-1 max-w-xl">
+          {/* <div className="hidden md:flex flex-1 max-w-xl">
             <input
               type="text"
               placeholder="Search global tech news..."
               className="w-full px-4 py-2 rounded-full bg-[#111827] text-gray-200 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400"
             />
-          </div>
-
-          {/* Right: CTA */}
-          <div className="hidden lg:flex items-center gap-4">
+          </div> */}
+          <div className="hidden md:flex flex-1 max-w-xl items-center justify-center gap-6">
+            <Link
+              href="/ai-tutor"
+              className="text-sm font-semibold text-cyan-400 hover:opacity-80"
+            >
+              Your Tutor
+            </Link>
             <Link
               href="/roadmaps"
               className="text-sm font-semibold text-cyan-400 hover:opacity-80"
@@ -110,7 +114,10 @@ const Header = () => {
             >
               Latest Updates →
             </Link>
+          </div>
 
+          {/* Right: CTA */}
+          <div className="hidden lg:flex items-center gap-4">
             {/* Auth / Profile */}
             {user ? (
               <div className="relative" ref={profileRef}>

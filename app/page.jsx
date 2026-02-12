@@ -1,3 +1,4 @@
+import AITutorSection from "@/components/Home/AITutorSection";
 import CategoryBlocks from "@/components/Home/CategoryBlocks";
 import FeaturedStory from "@/components/Home/FeaturedStory";
 import Hero from "@/components/Home/Hero";
@@ -10,6 +11,7 @@ export default function Home() {
     <div className="min-h-screen bg-white dark:bg-black">
       <Hero />
       <TrendingTopics />
+      <AITutorSection />
       <LatestNews />
       <FeaturedStory />
       <CategoryBlocks />
