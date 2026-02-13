@@ -619,7 +619,7 @@ export default function FormattedMessage({ text, streaming }) {
 
 // MCQ parsing function (moved here for completeness)
 function parseMCQs(text) {
-  const clean = normalizeText(text);
+  let clean = normalizeText(text);
 
   const hasQuizFormat = /(?:question|प्रश्न)\s*\d+[:.]/i.test(clean);
   if (!hasQuizFormat) return null;
@@ -643,6 +643,9 @@ function parseMCQs(text) {
         }
       });
     }
+
+    // Remove the answer key line from the text so it doesn't appear in parsed questions
+    clean = clean.replace(/\n*correct\s+answers?\s*[:.\-]\s*[^\n]+/i, "");
   }
 
   const parts = clean.split(/(?:question|प्रश्न)\s*\d+[:.]/i);
