@@ -29,6 +29,7 @@ export default function AITutorClient({ userId = 1 }) {
   const [examName, setExamName] = useState("");
   const [difficulty, setDifficulty] = useState("Mixed");
   const [questionCount, setQuestionCount] = useState(10);
+  const [language, setLanguage] = useState("en");
 
   const messagesEndRef = useRef(null);
   const lessonId = searchParams.get("lessonId") || null;
@@ -103,7 +104,7 @@ export default function AITutorClient({ userId = 1 }) {
           lessonId,
           message: requestMessage,
           mode: "practice-test", // Fixed mode for JEE Mains practice
-          language: "en",
+          language: language,
           chatId: currentChatId,
         }),
       });
@@ -479,7 +480,7 @@ export default function AITutorClient({ userId = 1 }) {
         <div className="border-t border-gray-800/40 bg-linear-to-t from-[#0B0B0B] via-[#0B0B0B]/95 to-transparent sticky bottom-0 backdrop-blur-sm">
           <div className="max-w-4xl mx-auto px-4 md:px-6 py-5">
             <div className="rounded-xl border border-gray-800/60 bg-gray-900/40 p-3 mb-3">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <div>
                   <label className="sr-only">Exam name</label>
                   <input
@@ -488,6 +489,17 @@ export default function AITutorClient({ userId = 1 }) {
                     placeholder="Exam (e.g., NEET)"
                     className="w-full h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2.5 text-[11px] text-gray-200 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
                   />
+                </div>
+                <div>
+                  <label className="sr-only">Language</label>
+                  <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    className="w-full h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2.5 text-[11px] text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
+                  >
+                    <option value="en">English</option>
+                    <option value="hi">हिंदी (Hindi)</option>
+                  </select>
                 </div>
                 <div>
                   <label className="sr-only">Level</label>
