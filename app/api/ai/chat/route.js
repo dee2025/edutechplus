@@ -10,6 +10,13 @@ export async function POST(req) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 });
     }
 
+    if (!process.env.CF_ACC_ID || !process.env.CF_API_TOKEN) {
+      return NextResponse.json(
+        { error: "AI service credentials are not configured" },
+        { status: 500 },
+      );
+    }
+
     // Get or create chat session
     let currentChatId = chatId;
     if (!currentChatId) {
@@ -60,6 +67,8 @@ export async function POST(req) {
     const activeMode = mode || userPrefs.default_mode || "tutor";
 
     const modeInstructions = {
+      "practice-test":
+        "You are an expert exam preparation tutor. Generate only MCQ practice questions based on the student's request for any exam (JEE Mains, NEET, UPSC, SAT, GRE, bank exams, GATE, etc.). Return strictly in MCQ format with no extra prose or explanations outside the format. For each question: 1) Present the question clearly, 2) Provide 4 multiple choice options (A, B, C, D), 3) Show the correct answer in this exact format: Answer: D. [full correct option text], 4) Provide a brief explanation after the answer line. Adapt to the topic and exam mentioned by the student and provide rigorous, exam-standard questions. AT THE VERY END, after all questions, provide a final summary: 'Correct Answers: Q1-A, Q2-D, Q3-C, ...' with the question number and letter.",
       tutor:
         "Explain concepts step by step like a patient teacher. Use examples and analogies.",
       explain:
@@ -71,6 +80,31 @@ export async function POST(req) {
       en: "Respond in clear, professional English.",
       hi: "सरल हिंदी में उत्तर दें। (Respond in simple Hindi)",
     };
+
+    const responseGuidelines =
+      activeMode === "practice-test"
+        ? `
+- Output only MCQ questions. Do not include general explanations or introductions.
+- Follow this exact format for each question:
+  Question 1: [question]
+  A. [option]
+  B. [option]
+  C. [option]
+  D. [option]
+  Answer: D. [full correct option text]
+  Explanation: [brief explanation]
+- If the user asks to explain, still return MCQs only.
+`
+        : `
+- Be accurate and educational
+- Use proper formatting (headings, bullet points, code blocks if relevant)
+- Include examples where helpful
+- If explaining code, provide working examples
+- For quizzes, follow the specified format exactly
+- Keep responses well-structured but natural
+- Avoid unnecessary fluff
+- If unsure, acknowledge limitations
+`;
 
     const prompt = `
 You are an expert AI tutor with years of teaching experience.
@@ -86,17 +120,25 @@ ${lessonContent || "No specific lesson context provided."}
 ${message}
 
 🎯 RESPONSE GUIDELINES:
-- Be accurate and educational
-- Use proper formatting (headings, bullet points, code blocks if relevant)
-- Include examples where helpful
-- If explaining code, provide working examples
-- For quizzes, follow the specified format exactly
-- Keep responses well-structured but natural
-- Avoid unnecessary fluff
-- If unsure, acknowledge limitations
+${responseGuidelines.trim()}
 
 Begin your response now:
 `;
+
+    // Calculate dynamic max_tokens based on question count
+    let maxTokens = 6000; // default
+    if (activeMode === "practice-test" || activeMode === "quiz") {
+      // Extract question count from message (e.g., "Number of questions: 20")
+      const questionMatch = message.match(
+        /number\s+of\s+questions\s*[:\-]\s*(\d+)/i,
+      );
+      if (questionMatch) {
+        const questionCount = parseInt(questionMatch[1]);
+        // Each question needs ~300 tokens (question + options + answer + explanation)
+        // Add 1000 for buffer and final answer key
+        maxTokens = Math.max(2000, Math.min(15000, questionCount * 300 + 1000));
+      }
+    }
 
     // Call AI API
     const aiRes = await fetch(
@@ -109,8 +151,9 @@ Begin your response now:
         },
         body: JSON.stringify({
           stream: true,
-          max_tokens: 2048,
-          temperature: activeMode === "quiz" ? 0.8 : 0.7,
+          max_tokens: maxTokens,
+          temperature:
+            activeMode === "practice-test" || activeMode === "quiz" ? 0.6 : 0.7,
           messages: [
             {
               role: "system",
@@ -124,7 +167,8 @@ Begin your response now:
     );
 
     if (!aiRes.ok) {
-      throw new Error(`AI API error: ${aiRes.status}`);
+      const errorText = await aiRes.text();
+      throw new Error(`AI API error: ${aiRes.status} ${errorText}`);
     }
 
     // Insert assistant message placeholder
@@ -232,7 +276,13 @@ Begin your response now:
   } catch (error) {
     console.error("Chat API error:", error);
     return NextResponse.json(
-      { error: "Failed to process chat request" },
+      {
+        error: "Failed to process chat request",
+        details:
+          error instanceof Error
+            ? error.message
+            : "Unknown error while processing request",
+      },
       { status: 500 },
     );
   }

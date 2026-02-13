@@ -1,43 +1,38 @@
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import McqCard from "./McqCard";
+import "katex/dist/katex.min.css";
 import {
+  BookOpen,
+  Braces,
+  Check,
   CheckCircle,
   Circle,
-  Lightbulb,
   Code,
-  Link,
-  Hash,
-  Quote,
-  Table,
-  FileText,
   Copy,
-  Check,
-  Terminal,
-  Braces,
+  FileText,
   GitBranch,
-  Package,
-  Wrench,
-  BookOpen,
-  AlertCircle,
+  Hash,
+  Link,
+  Quote,
+  Terminal,
 } from "lucide-react";
 import { useState } from "react";
-import "katex/dist/katex.min.css";
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import rehypeKatex from "rehype-katex";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import McqCard from "./McqCard";
 
 // Clean and normalize text - FIX for [object Object]
 function normalizeText(text) {
   if (!text) return "";
-  
+
   // Convert to string if it's not already
-  let cleanText = typeof text === 'string' ? text : String(text);
-  
+  let cleanText = typeof text === "string" ? text : String(text);
+
   // Fix [object Object] issues
-  cleanText = cleanText.replace(/\[object Object\]/g, '');
-  
+  cleanText = cleanText.replace(/\[object Object\]/g, "");
+
   // Fix common JSON stringification issues
   cleanText = cleanText.replace(/\{.*?\}/g, (match) => {
     try {
@@ -48,7 +43,54 @@ function normalizeText(text) {
       return match;
     }
   });
-  
+
+  // Insert spacing for consecutive bold headings
+  cleanText = cleanText.replace(
+    /(\*\*[^*]+\*\*)\s*(\*\*[^*]+\*\*)/g,
+    "$1\n\n$2",
+  );
+
+  // Ensure bold headings are separated from following content
+  cleanText = cleanText.replace(/(\*\*[^*]+\*\*)([A-Z])/g, "$1\n\n$2");
+
+  // Fix missing newlines between sentences and common headings
+  cleanText = cleanText.replace(/([a-zA-Z])There are/g, "$1\n\nThere are");
+  cleanText = cleanText.replace(/([a-zA-Z])Here'?s/g, "$1\n\nHere's");
+  cleanText = cleanText.replace(/([^\n])(\bExample:)/g, "$1\n\n$2");
+  cleanText = cleanText.replace(/([^\n])(\bConclusion\b)/g, "$1\n\n$2");
+
+  // Convert bold-only lines into headings
+  cleanText = cleanText.replace(/^\*\*([^*]+)\*\*$/gm, "## $1");
+
+  // Convert label-style lines into list items (avoid obvious headings)
+  cleanText = cleanText.replace(
+    /^(?!\s*[-*+]\s|\s*\d+[.)]\s|\s*#)([A-Za-z][A-Za-z0-9/+ .-]{1,40}:\s+.+)$/gm,
+    (match) => {
+      const lower = match.toLowerCase();
+      if (
+        lower.startsWith("example:") ||
+        lower.startsWith("conclusion") ||
+        lower.startsWith("types of")
+      ) {
+        return match;
+      }
+      return `- ${match}`;
+    },
+  );
+
+  // Convert language label blocks into fenced code blocks
+  cleanText = cleanText.replace(
+    /(^|\n)(jsx|javascript|js|tsx|ts)\s*\n([\s\S]*?)(?=\n{2,}|$)/g,
+    (match, lead, lang, code) => {
+      if (/```/.test(code)) return match;
+      const trimmed = code.replace(/\n+$/, "");
+      const looksLikeCode =
+        /^(?:import|const|function|class|export|return|<)/m.test(trimmed);
+      if (!looksLikeCode) return match;
+      return `${lead}\n\`\`\`${lang}\n${trimmed}\n\`\`\`\n`;
+    },
+  );
+
   // Clean up the text
   return cleanText
     .replace(/•/g, "-")
@@ -62,53 +104,55 @@ function normalizeText(text) {
 // Detect code blocks and tutorials
 function detectContentType(text) {
   const normalized = normalizeText(text);
-  
-  // Check if it's a tutorial/guide
-  const hasSteps = /step\s+\d+|^\d+\./gmi.test(normalized);
-  const hasCommands = /\$ |npm |node |install |express/gmi.test(normalized);
-  const hasFileCreation = /create a (new )?file|app\.js|package\.json/gmi.test(normalized);
-  
-  if (hasSteps || hasCommands || hasFileCreation) {
-    return 'tutorial';
-  }
-  
-  // Check if it's MCQ
+
+  // Check if it's MCQ first to avoid tutorial misclassification
   if (/(?:question|प्रश्न)\s*\d+[:.]/i.test(normalized)) {
-    return 'quiz';
+    return "quiz";
   }
-  
-  return 'general';
+
+  // Check if it's a tutorial/guide
+  const hasSteps = /step\s+\d+|^\d+\./gim.test(normalized);
+  const hasCommands = /\$ |npm |node |install |express/gim.test(normalized);
+  const hasFileCreation = /create a (new )?file|app\.js|package\.json/gim.test(
+    normalized,
+  );
+
+  if (hasSteps || hasCommands || hasFileCreation) {
+    return "tutorial";
+  }
+
+  return "general";
 }
 
 // Parse tutorial steps
 function parseTutorialSteps(text) {
   const clean = normalizeText(text);
   const steps = [];
-  
+
   // Split by step markers
-  const stepRegex = /(?:step|Stage|Phase|Part)\s+(\d+)[:.)]\s*([^\n]+)/gmi;
+  const stepRegex = /(?:step|Stage|Phase|Part)\s+(\d+)[:.)]\s*([^\n]+)/gim;
   let match;
-  
+
   while ((match = stepRegex.exec(clean)) !== null) {
     steps.push({
       number: parseInt(match[1]),
       title: match[2].trim(),
-      content: extractStepContent(clean, match.index)
+      content: extractStepContent(clean, match.index),
     });
   }
-  
+
   // If no explicit steps found, try numbered list
   if (steps.length === 0) {
-    const numberedRegex = /^\s*(\d+)[.)]\s+(.+)$/gmi;
+    const numberedRegex = /^\s*(\d+)[.)]\s+(.+)$/gim;
     while ((match = numberedRegex.exec(clean)) !== null) {
       steps.push({
         number: parseInt(match[1]),
         title: match[2].trim(),
-        content: match[0]
+        content: match[0],
       });
     }
   }
-  
+
   return steps.length > 0 ? steps : null;
 }
 
@@ -116,7 +160,7 @@ function extractStepContent(text, startIndex) {
   const nextStep = /(?:step|Stage|Phase|Part)\s+\d+/gi;
   nextStep.lastIndex = startIndex + 1;
   const nextMatch = nextStep.exec(text);
-  
+
   if (nextMatch) {
     return text.substring(startIndex, nextMatch.index).trim();
   }
@@ -126,16 +170,17 @@ function extractStepContent(text, startIndex) {
 // Extract commands from text
 function extractCommands(text) {
   const commands = [];
-  const commandRegex = /(?:^\$ |^>\s*|```(?:bash|sh|shell|cmd|powershell)?\s*\n)([^\n]+(?:&&[^\n]+)*)/gmi;
+  const commandRegex =
+    /(?:^\$ |^>\s*|```(?:bash|sh|shell|cmd|powershell)?\s*\n)([^\n]+(?:&&[^\n]+)*)/gim;
   let match;
-  
+
   while ((match = commandRegex.exec(text)) !== null) {
     commands.push({
       command: match[1].trim(),
-      fullMatch: match[0]
+      fullMatch: match[0],
     });
   }
-  
+
   return commands;
 }
 
@@ -143,42 +188,42 @@ function extractCommands(text) {
 function TutorialStep({ number, title, content }) {
   const [copied, setCopied] = useState(false);
   const commands = extractCommands(content);
-  
+
   const copyAllCommands = async () => {
-    const commandText = commands.map(c => c.command).join('\n');
+    const commandText = commands.map((c) => c.command).join("\n");
     await navigator.clipboard.writeText(commandText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  
+
   return (
     <div className="relative pl-12 pb-8 group">
       {/* Step Number Badge */}
       <div className="absolute left-0 top-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center font-semibold text-white shadow-lg">
         {number}
       </div>
-      
+
       {/* Connector Line */}
       <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gradient-to-b from-blue-500/50 to-transparent" />
-      
+
       <div className="bg-[#1A1A1A] border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
         {/* Step Title */}
         <h3 className="text-lg font-semibold text-gray-100 mb-4 flex items-center gap-2">
           <GitBranch className="w-5 h-5 text-blue-400" />
           {title}
         </h3>
-        
+
         {/* Step Content */}
         <div className="prose prose-invert max-w-none mb-4">
-          <ReactMarkdown 
+          <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeKatex]}
             components={MarkdownComponents}
           >
-            {content.replace(/^.*?:\s*/, '')}
+            {content.replace(/^.*?:\s*/, "")}
           </ReactMarkdown>
         </div>
-        
+
         {/* Commands Section */}
         {commands.length > 0 && (
           <div className="mt-4 space-y-3">
@@ -211,9 +256,11 @@ function TutorialStep({ number, title, content }) {
             ))}
           </div>
         )}
-        
+
         {/* File Creation Indicator */}
-        {content.includes('create a new file') || content.includes('app.js') || content.includes('package.json') ? (
+        {content.includes("create a new file") ||
+        content.includes("app.js") ||
+        content.includes("package.json") ? (
           <div className="mt-4 flex items-center gap-2 text-sm text-green-400 bg-green-500/10 p-3 rounded-lg border border-green-500/20">
             <FileText className="w-4 h-4" />
             <span>File creation detected</span>
@@ -227,13 +274,13 @@ function TutorialStep({ number, title, content }) {
 // Command Block Component
 function CommandBlock({ command }) {
   const [copied, setCopied] = useState(false);
-  
+
   const copyCommand = async () => {
     await navigator.clipboard.writeText(command);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  
+
   return (
     <div className="relative group">
       <div className="bg-[#0D1117] rounded-lg border border-gray-800 font-mono text-sm overflow-hidden">
@@ -265,25 +312,34 @@ function CommandBlock({ command }) {
 // Code Block Component
 function CodeBlock({ language, value }) {
   const [copied, setCopied] = useState(false);
-  
+
   const copyCode = async () => {
     await navigator.clipboard.writeText(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  
+
   const getLanguageIcon = () => {
-    switch(language) {
-      case 'javascript': case 'js': return <Braces className="w-4 h-4" />;
-      case 'python': return <Braces className="w-4 h-4" />;
-      case 'bash': case 'sh': return <Terminal className="w-4 h-4" />;
-      case 'json': return <Braces className="w-4 h-4" />;
-      case 'html': return <FileText className="w-4 h-4" />;
-      case 'css': return <FileText className="w-4 h-4" />;
-      default: return <Code className="w-4 h-4" />;
+    switch (language) {
+      case "javascript":
+      case "js":
+        return <Braces className="w-4 h-4" />;
+      case "python":
+        return <Braces className="w-4 h-4" />;
+      case "bash":
+      case "sh":
+        return <Terminal className="w-4 h-4" />;
+      case "json":
+        return <Braces className="w-4 h-4" />;
+      case "html":
+        return <FileText className="w-4 h-4" />;
+      case "css":
+        return <FileText className="w-4 h-4" />;
+      default:
+        return <Code className="w-4 h-4" />;
     }
   };
-  
+
   return (
     <div className="relative group my-6">
       <div className="absolute right-3 top-3 z-10">
@@ -303,15 +359,15 @@ function CodeBlock({ language, value }) {
         <div className="flex items-center gap-2 px-4 py-2 bg-gray-900/90 border-b border-gray-800">
           {getLanguageIcon()}
           <span className="text-xs font-mono text-gray-400">
-            {language || 'code'}
+            {language || "code"}
           </span>
         </div>
         <SyntaxHighlighter
           style={vscDarkPlus}
-          language={language || 'javascript'}
+          language={language || "javascript"}
           PreTag="div"
           className="!mt-0 !rounded-none"
-          showLineNumbers={value.split('\n').length > 5}
+          showLineNumbers={value.split("\n").length > 5}
         >
           {value}
         </SyntaxHighlighter>
@@ -341,19 +397,22 @@ const MarkdownComponents = {
   ),
   p: ({ children }) => {
     // Check if paragraph contains code
-    const hasCode = typeof children === 'string' && 
-      (children.includes('npm') || children.includes('node') || children.includes('http://'));
-    
+    const hasCode =
+      typeof children === "string" &&
+      (children.includes("npm") ||
+        children.includes("node") ||
+        children.includes("http://"));
+
     return (
-      <p className={`text-gray-300 leading-relaxed mb-4 ${hasCode ? 'font-mono text-sm bg-gray-900/30 p-2 rounded' : ''}`}>
+      <p
+        className={`text-gray-300 leading-relaxed mb-4 ${hasCode ? "font-mono text-sm bg-gray-900/30 p-2 rounded" : ""}`}
+      >
         {children}
       </p>
     );
   },
   ul: ({ children }) => (
-    <ul className="space-y-2 mb-4 list-none">
-      {children}
-    </ul>
+    <ul className="space-y-2 mb-4 list-none">{children}</ul>
   ),
   ol: ({ children }) => (
     <ol className="space-y-2 mb-4 list-decimal list-inside marker:text-blue-400">
@@ -367,13 +426,13 @@ const MarkdownComponents = {
     </li>
   ),
   code({ inline, className, children, ...props }) {
-    const match = /language-(\w+)/.exec(className || '');
-    const value = String(children).replace(/\n$/, '');
-    
+    const match = /language-(\w+)/.exec(className || "");
+    const value = String(children).replace(/\n$/, "");
+
     if (!inline && match) {
       return <CodeBlock language={match[1]} value={value} />;
     }
-    
+
     // Inline code
     return (
       <code className="bg-gray-900/80 px-1.5 py-0.5 rounded-md text-sm text-blue-300 border border-gray-800 font-mono">
@@ -400,38 +459,55 @@ const MarkdownComponents = {
       <Link className="w-3.5 h-3.5 inline ml-1" />
     </a>
   ),
-  hr: () => (
-    <hr className="my-8 border-t border-gray-800" />
+  hr: () => <hr className="my-8 border-t border-gray-800" />,
+  table: ({ children }) => (
+    <div className="overflow-x-auto my-4 rounded-lg border border-gray-800">
+      <table className="w-full text-sm text-gray-300">{children}</table>
+    </div>
   ),
+  thead: ({ children }) => (
+    <thead className="bg-gray-900/60 text-gray-200">{children}</thead>
+  ),
+  tbody: ({ children }) => (
+    <tbody className="divide-y divide-gray-800">{children}</tbody>
+  ),
+  tr: ({ children }) => <tr className="align-top">{children}</tr>,
+  th: ({ children }) => (
+    <th className="px-3 py-2 text-left font-semibold">{children}</th>
+  ),
+  td: ({ children }) => <td className="px-3 py-2">{children}</td>,
 };
 
 // Main FormattedMessage Component
 export default function FormattedMessage({ text, streaming }) {
   const [copiedAll, setCopiedAll] = useState(false);
   const contentType = detectContentType(text);
-  const tutorialSteps = contentType === 'tutorial' ? parseTutorialSteps(text) : null;
-  const mcqs = contentType === 'quiz' ? parseMCQs(text) : null;
-  
+  const tutorialSteps =
+    contentType === "tutorial" ? parseTutorialSteps(text) : null;
+  const mcqs = contentType === "quiz" ? parseMCQs(text) : null;
+
+  const rawText = typeof text === "string" ? text : String(text ?? "");
   const normalizedText = normalizeText(text);
-  
+  const renderText = normalizedText.trim() ? normalizedText : rawText;
+
   // Copy entire message
   const copyAllContent = async () => {
-    await navigator.clipboard.writeText(normalizedText);
+    await navigator.clipboard.writeText(renderText);
     setCopiedAll(true);
     setTimeout(() => setCopiedAll(false), 2000);
   };
-  
+
   // Render MCQs
   if (mcqs) {
     return (
       <div className="space-y-4">
-        {mcqs.map(mcq => (
+        {mcqs.map((mcq) => (
           <McqCard key={mcq.id} {...mcq} />
         ))}
       </div>
     );
   }
-  
+
   // Render Tutorial with Steps
   if (tutorialSteps) {
     return (
@@ -470,14 +546,14 @@ export default function FormattedMessage({ text, streaming }) {
             </button>
           </div>
         </div>
-        
+
         {/* Tutorial Steps */}
         <div className="space-y-0">
           {tutorialSteps.map((step, index) => (
             <TutorialStep key={index} {...step} />
           ))}
         </div>
-        
+
         {/* Completion Message */}
         <div className="mt-8 p-6 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20">
           <div className="flex items-center gap-3">
@@ -489,7 +565,8 @@ export default function FormattedMessage({ text, streaming }) {
                 Tutorial Complete!
               </h3>
               <p className="text-sm text-gray-400">
-                You've successfully completed all steps. Your Node.js app is now ready!
+                You've successfully completed all steps. Your Node.js app is now
+                ready!
               </p>
             </div>
           </div>
@@ -497,7 +574,7 @@ export default function FormattedMessage({ text, streaming }) {
       </div>
     );
   }
-  
+
   // Render General Content
   return (
     <div className="relative group">
@@ -506,7 +583,7 @@ export default function FormattedMessage({ text, streaming }) {
           <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
         </div>
       )}
-      
+
       {/* Copy button for general content */}
       <div className="absolute -top-3 right-0 opacity-0 group-hover:opacity-100 transition-opacity z-10">
         <button
@@ -526,14 +603,14 @@ export default function FormattedMessage({ text, streaming }) {
           )}
         </button>
       </div>
-      
+
       <div className="prose prose-invert max-w-none">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath]}
           rehypePlugins={[rehypeKatex]}
           components={MarkdownComponents}
         >
-          {normalizedText}
+          {renderText}
         </ReactMarkdown>
       </div>
     </div>
@@ -543,27 +620,74 @@ export default function FormattedMessage({ text, streaming }) {
 // MCQ parsing function (moved here for completeness)
 function parseMCQs(text) {
   const clean = normalizeText(text);
-  
+
   const hasQuizFormat = /(?:question|प्रश्न)\s*\d+[:.]/i.test(clean);
   if (!hasQuizFormat) return null;
+
+  // Extract the final "Correct Answers:" summary line if it exists
+  const answerKeyMatch = clean.match(/correct\s+answers?\s*[:.\-]\s*([^\n]+)/i);
+  let answerKeyMap = {};
+
+  if (answerKeyMatch) {
+    // Parse the answer key: "Q1-A, Q2-D, Q3-C, ..." or "1-A, 2-D, 3-C, ..."
+    const answerString = answerKeyMatch[1];
+    const answerPairs = answerString.match(/([QqQ]?\d+)\s*[-:]\s*([A-Da-d])/g);
+
+    if (answerPairs) {
+      answerPairs.forEach((pair) => {
+        const match = pair.match(/([QqQ]?\d+)\s*[-:]\s*([A-Da-d])/);
+        if (match) {
+          const qNumber = match[1].replace(/[Qq]/i, "");
+          const letter = match[2].toUpperCase();
+          answerKeyMap[parseInt(qNumber)] = letter;
+        }
+      });
+    }
+  }
 
   const parts = clean.split(/(?:question|प्रश्न)\s*\d+[:.]/i);
   if (parts.length <= 1) return null;
 
   return parts.slice(1).map((block, index) => {
-    const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
-    
+    const questionNumber = index + 1;
+    const lines = block
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+
     const question = lines[0];
-    const options = lines.filter(l => /^[A-Da-d][.)]/.test(l));
-    const answerLine = lines.find(l => /^(?:answer|उत्तर)\s*[:.]/i.test(l));
-    const explanationLine = lines.find(l => /^(?:explanation|स्पष्टीकरण)\s*[:.]/i.test(l));
+    const options = lines.filter((l) => /^[A-Da-d]\s*[.)-]/.test(l));
+    const answerLine = lines.find((l) =>
+      /^(?:answer|उत्तर)\s*[:.\-]?/i.test(l),
+    );
+    const explanationLine = lines.find((l) =>
+      /^(?:explanation|स्पष्टीकरण)\s*[:.]/i.test(l),
+    );
+
+    // First, try to use the answer from the final answer key
+    let answer = answerKeyMap[questionNumber];
+
+    // Fallback to per-question answer line if key not found
+    if (!answer) {
+      let answerText = answerLine?.replace(
+        /^(?:answer|उत्तर)\s*[:.\-]?\s*/i,
+        "",
+      );
+      const answerMatch = answerText?.match(/^([A-Da-d])\b/);
+      if (answerMatch) {
+        answer = answerMatch[1].toUpperCase();
+      }
+    }
 
     return {
       id: index,
       question,
       options,
-      answer: answerLine?.replace(/^(?:answer|उत्तर)\s*[:.]\s*/i, ""),
-      explanation: explanationLine?.replace(/^(?:explanation|स्पष्टीकरण)\s*[:.]\s*/i, ""),
+      answer,
+      explanation: explanationLine?.replace(
+        /^(?:explanation|स्पष्टीकरण)\s*[:.]\s*/i,
+        "",
+      ),
     };
   });
 }
