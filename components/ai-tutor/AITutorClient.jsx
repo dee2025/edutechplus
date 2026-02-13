@@ -28,8 +28,9 @@ export default function AITutorClient({ userId = 1 }) {
   const [feedbackStates, setFeedbackStates] = useState({});
   const [examName, setExamName] = useState("");
   const [difficulty, setDifficulty] = useState("Mixed");
-  const [questionCount, setQuestionCount] = useState(10);
+  const [questionCount, setQuestionCount] = useState(5);
   const [language, setLanguage] = useState("en");
+  const [topic, setTopic] = useState("");
 
   const messagesEndRef = useRef(null);
   const lessonId = searchParams.get("lessonId") || null;
@@ -77,6 +78,7 @@ export default function AITutorClient({ userId = 1 }) {
 
     const requestMessage = [
       examName.trim() ? `Exam: ${examName.trim()}` : null,
+      topic.trim() ? `Topic: ${topic.trim()}` : null,
       difficulty ? `Level: ${difficulty}` : null,
       Number.isFinite(questionCount)
         ? `Number of questions: ${questionCount}`
@@ -229,14 +231,8 @@ export default function AITutorClient({ userId = 1 }) {
     }
   };
 
-  // Exam practice suggestion prompts
-  const suggestions = [
-    "Generate practice questions on Thermodynamics",
-    "Create MCQs for bacterial infections (NEET)",
-    "Give me problems on Quadratic equations",
-    "Practice questions on Constitutional Law (UPSC)",
-    "Data interpretation questions for bank exams",
-  ];
+  // Exam quick start options
+  const examOptions = ["JEE Mains", "NEET", "UPSC", "SAT", "GATE"];
 
   return (
     <div className="h-screen bg-[#0B0B0B] text-gray-200 flex overflow-hidden">
@@ -254,7 +250,7 @@ export default function AITutorClient({ userId = 1 }) {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <header className="border-b border-gray-800/30 bg-linear-to-b from-gray-900/80 to-[#0B0B0B] backdrop-blur-md sticky top-0 z-10">
-          <div className="px-4 py-3 md:px-6 md:py-4 flex items-center justify-between">
+          <div className="px-2 py-2 md:px-6 md:py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -263,12 +259,12 @@ export default function AITutorClient({ userId = 1 }) {
                 <Menu className="w-5 h-5" />
               </button>
 
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-linear-to-br from-orange-500/30 to-red-500/20 rounded-lg flex items-center justify-center border border-orange-500/20">
-                  <MessageSquare className="w-5 h-5 text-orange-400" />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-linear-to-br from-orange-500/30 to-red-500/20 rounded-lg flex items-center justify-center border border-orange-500/20">
+                  <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-orange-400" />
                 </div>
-                <div>
-                  <h1 className="font-semibold text-gray-100 text-base">
+                <div className="hidden md:block">
+                  <h1 className="font-semibold text-gray-100 text-sm md:text-base">
                     {currentChatId ? "Practice Test" : "New Practice Session"}
                   </h1>
                   {currentChatId && (
@@ -283,10 +279,10 @@ export default function AITutorClient({ userId = 1 }) {
 
             <button
               onClick={startNewChat}
-              className="flex items-center gap-2 px-3 py-2 md:px-4 bg-linear-to-r from-orange-500/20 to-red-500/20 hover:from-orange-500/30 hover:to-red-500/30 rounded-lg border border-orange-500/30 transition-all duration-200 group"
+              className="flex items-center gap-1 px-2 py-1.5 md:px-4 md:py-2 bg-linear-to-r from-orange-500/20 to-red-500/20 hover:from-orange-500/30 hover:to-red-500/30 rounded-lg border border-orange-500/30 transition-all duration-200 group"
             >
-              <Plus className="w-4 h-4 text-orange-400 group-hover:text-orange-300 transition-colors" />
-              <span className="text-sm text-orange-400 group-hover:text-orange-300 hidden md:inline transition-colors">
+              <Plus className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-400 group-hover:text-orange-300 transition-colors" />
+              <span className="text-xs md:text-sm text-orange-400 group-hover:text-orange-300 hidden md:inline transition-colors">
                 New Session
               </span>
             </button>
@@ -295,42 +291,41 @@ export default function AITutorClient({ userId = 1 }) {
 
         {/* Chat Area */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
+          <div className="max-w-4xl mx-auto px-2 md:px-6 py-4 md:py-8">
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center min-h-[60vh] md:min-h-[70vh] text-center py-6 md:py-8">
-                <div className="w-20 h-20 md:w-24 md:h-24 bg-linear-to-br from-orange-500/30 via-orange-500/10 to-red-500/20 rounded-3xl flex items-center justify-center mb-6 md:mb-8 border border-orange-500/20 shadow-2xl shadow-orange-500/5">
-                  <Sparkles className="w-10 h-10 md:w-12 md:h-12 text-orange-400" />
+              <div className="flex flex-col items-center justify-center min-h-[50vh] md:min-h-[70vh] text-center py-3 md:py-8">
+                <div className="w-16 h-16 md:w-24 md:h-24 bg-linear-to-br from-orange-500/30 via-orange-500/10 to-red-500/20 rounded-3xl flex items-center justify-center mb-3 md:mb-8 border border-orange-500/20 shadow-2xl shadow-orange-500/5">
+                  <Sparkles className="w-8 h-8 md:w-12 md:h-12 text-orange-400" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold bg-linear-to-r from-gray-100 via-gray-200 to-gray-100 bg-clip-text text-transparent mb-4">
+                <h2 className="text-lg md:text-3xl font-bold bg-linear-to-r from-gray-100 via-gray-200 to-gray-100 bg-clip-text text-transparent mb-2 md:mb-4">
                   Practice Test Papers
                 </h2>
-                <p className="text-gray-400 max-w-xl mb-8 md:mb-10 leading-relaxed text-sm">
+                <p className="text-gray-400 max-w-xl mb-4 md:mb-10 leading-relaxed text-xs md:text-sm hidden md:block">
                   Ask questions for any exam prep - JEE Mains, NEET, UPSC, SAT,
                   GATE, bank exams, and more. I will generate exam-standard
                   practice questions with step-by-step solutions.
                 </p>
 
-                <div className="w-full max-w-2xl mb-8 md:mb-10">
-                  <p className="text-xs text-gray-500 font-semibold mb-5 uppercase tracking-wider">
+                <div className="w-full max-w-2xl mb-4 md:mb-10">
+                  <p className="text-xs text-gray-500 font-semibold mb-3 md:mb-5 uppercase tracking-wider">
                     Quick Starts
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {suggestions.map((suggestion, idx) => (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                    {examOptions.map((exam, idx) => (
                       <button
                         key={idx}
-                        onClick={() => setInput(suggestion)}
-                        className="group p-4 bg-linear-to-r from-gray-900/60 to-gray-800/40 border border-gray-800/60 rounded-xl hover:border-orange-500/50 hover:from-orange-500/10 hover:to-red-500/5 transition-all duration-200 text-left"
+                        onClick={() => setExamName(exam)}
+                        className="group p-2 md:p-3 bg-linear-to-r from-gray-900/60 to-gray-800/40 border border-gray-800/60 rounded-lg md:rounded-xl hover:border-orange-500/50 hover:from-orange-500/10 hover:to-red-500/5 transition-all duration-200 text-center"
                       >
-                        <p className="text-sm text-gray-300 group-hover:text-orange-300 flex items-center gap-3 transition-colors">
-                          <span className="text-orange-400 text-lg">→</span>
-                          <span>{suggestion}</span>
+                        <p className="text-xs md:text-sm text-gray-300 group-hover:text-orange-300 transition-colors font-medium">
+                          {exam}
                         </p>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="bg-linear-to-br from-orange-500/10 via-orange-500/5 to-red-500/5 border border-orange-500/30 rounded-2xl p-8 max-w-2xl w-full">
+                <div className="bg-linear-to-br from-orange-500/10 via-orange-500/5 to-red-500/5 border border-orange-500/30 rounded-xl md:rounded-2xl p-4 md:p-8 max-w-2xl w-full hidden md:block">
                   <p className="text-sm text-orange-300 font-semibold mb-4">
                     Pro Tips for Better Answers
                   </p>
@@ -478,16 +473,25 @@ export default function AITutorClient({ userId = 1 }) {
 
         {/* Input Area */}
         <div className="border-t border-gray-800/40 bg-linear-to-t from-[#0B0B0B] via-[#0B0B0B]/95 to-transparent sticky bottom-0 backdrop-blur-sm">
-          <div className="max-w-4xl mx-auto px-4 md:px-6 py-5">
-            <div className="rounded-xl border border-gray-800/60 bg-gray-900/40 p-3 mb-3">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="max-w-4xl mx-auto px-2 md:px-6 py-2 md:py-5">
+            <div className="rounded-lg md:rounded-xl border border-gray-800/60 bg-gray-900/40 p-2 md:p-3 mb-2 md:mb-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1.5 md:gap-2">
                 <div>
                   <label className="sr-only">Exam name</label>
                   <input
                     value={examName}
                     onChange={(e) => setExamName(e.target.value)}
-                    placeholder="Exam (e.g., NEET)"
-                    className="w-full h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2.5 text-[11px] text-gray-200 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
+                    placeholder="Exam"
+                    className="w-full h-8 md:h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2 md:px-2.5 text-[10px] md:text-[11px] text-gray-200 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
+                  />
+                </div>
+                <div>
+                  <label className="sr-only">Topic</label>
+                  <input
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    placeholder="Topic"
+                    className="w-full h-8 md:h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2 md:px-2.5 text-[10px] md:text-[11px] text-gray-200 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
                   />
                 </div>
                 <div>
@@ -495,10 +499,10 @@ export default function AITutorClient({ userId = 1 }) {
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2.5 text-[11px] text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
+                    className="w-full h-8 md:h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2 md:px-2.5 text-[10px] md:text-[11px] text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
                   >
-                    <option value="en">English</option>
-                    <option value="hi">हिंदी (Hindi)</option>
+                    <option value="en">EN</option>
+                    <option value="hi">HI</option>
                   </select>
                 </div>
                 <div>
@@ -506,9 +510,9 @@ export default function AITutorClient({ userId = 1 }) {
                   <select
                     value={difficulty}
                     onChange={(e) => setDifficulty(e.target.value)}
-                    className="w-full h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2.5 text-[11px] text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
+                    className="w-full h-8 md:h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2 md:px-2.5 text-[10px] md:text-[11px] text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
                   >
-                    <option value="Mixed">Mixed level</option>
+                    <option value="Mixed">Mixed</option>
                     <option value="Easy">Easy</option>
                     <option value="Medium">Medium</option>
                     <option value="Hard">Hard</option>
@@ -519,34 +523,28 @@ export default function AITutorClient({ userId = 1 }) {
                   <select
                     value={questionCount}
                     onChange={(e) => setQuestionCount(Number(e.target.value))}
-                    className="w-full h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2.5 text-[11px] text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
+                    className="w-full h-8 md:h-9 bg-gray-900/60 border border-gray-800/60 rounded-md px-2 md:px-2.5 text-[10px] md:text-[11px] text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
                   >
-                    <option value={5}>5 questions</option>
-                    <option value={10}>10 questions</option>
-                    <option value={15}>15 questions</option>
-                    <option value={20}>20 questions</option>
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={15}>15</option>
+                    <option value={20}>20</option>
                   </select>
                 </div>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span>📚</span>
-                <span>Practice Test Mode</span>
-                <span className="text-gray-700">•</span>
-                <span>Select all three options</span>
-              </div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               {canSend && (
                 <button
                   onClick={sendMessage}
-                  className="flex items-center justify-center gap-2 w-full sm:w-auto bg-linear-to-r from-orange-500/20 to-red-500/10 hover:from-orange-500/30 hover:to-red-500/20 px-5 py-2.5 rounded-lg transition-all duration-200 border border-orange-500/40 hover:border-orange-500/60 shadow-lg shadow-orange-500/10"
+                  className="flex items-center justify-center gap-1.5 w-full sm:w-auto bg-linear-to-r from-orange-500/20 to-red-500/10 hover:from-orange-500/30 hover:to-red-500/20 px-3 md:px-5 py-1.5 md:py-2.5 rounded-lg transition-all duration-200 border border-orange-500/40 hover:border-orange-500/60 shadow-lg shadow-orange-500/10"
                 >
                   {loading ? (
-                    <Loader2 className="w-4 h-4 text-orange-400 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-400 animate-spin" />
                   ) : (
                     <>
-                      <Send className="w-4 h-4 text-orange-400" />
-                      <span className="text-xs font-semibold text-orange-400 uppercase tracking-wide">
+                      <Send className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-400" />
+                      <span className="text-[10px] md:text-xs font-semibold text-orange-400 uppercase tracking-wide">
                         Generate
                       </span>
                     </>

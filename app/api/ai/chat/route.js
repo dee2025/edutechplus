@@ -68,7 +68,7 @@ export async function POST(req) {
 
     const modeInstructions = {
       "practice-test":
-        "You are an expert exam preparation tutor. Generate only MCQ practice questions based on the student's request for any exam (JEE Mains, NEET, UPSC, SAT, GRE, bank exams, GATE, etc.). Return strictly in MCQ format with no extra prose or explanations outside the format. For each question: 1) Present the question clearly, 2) Provide 4 multiple choice options (A, B, C, D), 3) Show the correct answer in this exact format: Answer: D. [full correct option text], 4) Provide a brief explanation after the answer line. Adapt to the topic and exam mentioned by the student and provide rigorous, exam-standard questions. AT THE VERY END, after all questions, provide a final summary: 'Correct Answers: Q1-A, Q2-D, Q3-C, ...' with the question number and letter.",
+        "You are a world-class exam preparation expert who creates professional-grade MCQ papers identical to real competitive exams. Your role is to generate highly structured, challenging, and authentic practice questions that prepare students for actual exams. Each question must be meticulously crafted with true-to-exam difficulty and content standards.",
       tutor:
         "Explain concepts step by step like a patient teacher. Use examples and analogies.",
       explain:
@@ -84,16 +84,50 @@ export async function POST(req) {
     const responseGuidelines =
       activeMode === "practice-test"
         ? `
-- Output only MCQ questions. Do not include general explanations or introductions.
-- Follow this exact format for each question:
-  Question 1: [question]
-  A. [option]
-  B. [option]
-  C. [option]
-  D. [option]
-  Answer: D. [full correct option text]
-  Explanation: [brief explanation]
-- If the user asks to explain, still return MCQs only.
+📋 STRICT FORMATTING REQUIREMENTS:
+- NO introductions, descriptions, or preambles. Start directly with Question 1.
+- Maintain consistent spacing between questions (blank line between each).
+- Follow this exact format PRECISELY for every question:
+
+Question 1: [Clear, concise, well-structured question text]
+A. [Option A - realistic distractor]
+B. [Option B - realistic distractor]
+C. [Option C - realistic or correct answer]
+D. [Option D - realistic distractor]
+Answer: C. [Exact full text of correct option]
+Explanation: [2-3 lines explaining why C is correct, common mistakes, and key concept]
+
+🎯 QUESTION GENERATION STANDARDS:
+- Questions must match the specified difficulty level (Easy/Medium/Hard)
+- Include only questions relevant to the specified topic and exam type
+- Vary question types: direct recall, application, analysis, comparison, calculation
+- Progress difficulty naturally (easier questions first, harder at the end)
+- No question should be ambiguous or have multiple correct answers
+
+⚙️ OPTION DESIGN (Critical for Exam Realism):
+- All 4 options must be plausible to prevent random guessing
+- Distractors should reflect common student misconceptions
+- Avoid obviously wrong options
+- Ensure only ONE correct answer per question
+- Similar length and complexity for all options
+- No typographical errors or grammatical mistakes
+
+📝 EXPLANATION QUALITY:
+- Explain why the correct answer is right
+- Address why students commonly choose wrong answers
+- Reference key concepts, formulas, or principles
+- Keep explanations concise but comprehensive
+
+⛔ CRITICAL REQUIREMENT FOR ANSWER KEY:
+After generating ALL questions, MUST include a final summary line on a new line:
+Correct Answers: Q1-C, Q2-A, Q3-D, Q4-B, Q5-D, ... (list ALL question numbers with their correct answer letters)
+
+This answer key line is ESSENTIAL and MUST be included at the very end, after all explanations.
+
+⛔ FINAL RULES:
+- NO additional text, headers, or commentary outside questions and answer key
+- Start with 'Question 1:' 
+- End with 'Correct Answers: Q1-X, Q2-X, ...' format
 `
         : `
 - Be accurate and educational
@@ -107,22 +141,16 @@ export async function POST(req) {
 `;
 
     const prompt = `
-You are an expert AI tutor with years of teaching experience.
+${modeInstructions[activeMode]}
 
-📚 CONTEXT:
-${activeMode.toUpperCase()} Mode: ${modeInstructions[activeMode]}
 🌐 Language: ${langInstructions[activeLanguage]}
 
-📖 LESSON MATERIAL:
-${lessonContent || "No specific lesson context provided."}
-
-💬 STUDENT QUESTION:
+📋 PAPER SPECIFICATIONS:
 ${message}
 
-🎯 RESPONSE GUIDELINES:
 ${responseGuidelines.trim()}
 
-Begin your response now:
+Now generate the exam paper:
 `;
 
     // Calculate dynamic max_tokens based on question count
