@@ -213,7 +213,9 @@ export default function ProfilePage() {
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0b0f19]">
         <div className="text-center">
           <div className="animate-spin w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Loading your profile...</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading your profile...
+          </p>
         </div>
       </div>
     );

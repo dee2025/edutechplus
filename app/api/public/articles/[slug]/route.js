@@ -12,12 +12,14 @@ export async function GET(req, { params }) {
       `
           SELECT 
               a.*,
-              ad.name AS author_name,
+              COALESCE(u.name, ad.name) AS author_name,
+              COALESCE(u.avatar_url, ad.avatar) AS author_avatar,
               c.name AS category_name,
               c.slug AS category_slug,
               (SELECT COUNT(*) FROM article_views WHERE article_id = a.id) AS views
           FROM articles a
-          JOIN admins ad ON ad.id = a.author_id
+          LEFT JOIN users u ON u.id = a.author_id
+          LEFT JOIN admins ad ON ad.id = a.author_id
           LEFT JOIN categories c ON c.id = a.category_id
           WHERE a.slug = ? AND a.status = 'published'
           `,
