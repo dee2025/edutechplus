@@ -1,22 +1,25 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import dynamic from "next/dynamic";
 
 const Editor = dynamic(() => import("@/components/article/Editor"), {
   ssr: false,
-  loading: () => <div className="h-96 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />,
+  loading: () => (
+    <div className="h-96 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+  ),
 });
 
 export default function PublishArticlePage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [form, setForm] = useState({
     title: "",
@@ -24,7 +27,6 @@ export default function PublishArticlePage() {
     excerpt: "",
     content: "",
     featured_image: "",
-    category_ids: [],
     seo_title: "",
     seo_description: "",
   });
@@ -36,19 +38,48 @@ export default function PublishArticlePage() {
     }
 
     if (status === "authenticated") {
-      fetchCategories();
+      setLoading(false);
     }
   }, [status, router]);
 
-  async function fetchCategories() {
+  async function handleImageUpload(file) {
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
+    setUploading(true);
+    toast.loading("Uploading image...", { id: "upload" });
+
     try {
-      const res = await fetch("/api/public/categories");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/articles/upload", {
+        method: "POST",
+        body: formData,
+      });
+
       const data = await res.json();
-      setCategories(data.categories || []);
+
+      if (!res.ok) {
+        throw new Error(data.message || "Upload failed");
+      }
+
+      setForm((prev) => ({ ...prev, featured_image: data.url }));
+      toast.success("Image uploaded successfully!", { id: "upload" });
     } catch (err) {
-      console.error("Failed to fetch categories:", err);
+      console.error("Upload error:", err);
+      toast.error(err.message || "Image upload failed", { id: "upload" });
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   }
 
@@ -62,11 +93,6 @@ export default function PublishArticlePage() {
 
     if (!form.content.trim()) {
       toast.error("Article content is required");
-      return;
-    }
-
-    if (form.category_ids.length === 0) {
-      toast.error("Select at least one category");
       return;
     }
 
@@ -164,56 +190,55 @@ export default function PublishArticlePage() {
         {/* Featured Image */}
         <div>
           <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            Featured Image URL
+            Featured Image
           </label>
-          <input
-            type="url"
-            value={form.featured_image}
-            onChange={(e) => setForm({ ...form, featured_image: e.target.value })}
-            placeholder="https://example.com/image.jpg"
-            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-          />
-          {form.featured_image && (
-            <img
-              src={form.featured_image}
-              alt="Preview"
-              className="mt-3 h-40 w-full object-cover rounded-lg"
-            />
-          )}
-        </div>
-
-        {/* Categories */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            Categories * (select at least one)
-          </label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {categories.map((cat) => (
-              <label
-                key={cat.id}
-                className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            {!form.featured_image ? (
+              <div className="space-y-3">
+                <div className="flex justify-center">
+                  <label htmlFor="image-upload" className="cursor-pointer">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+                        <Upload className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          Click to upload
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          PNG, JPG, GIF up to 5MB
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                </div>
                 <input
-                  type="checkbox"
-                  checked={form.category_ids.includes(cat.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setForm({
-                        ...form,
-                        category_ids: [...form.category_ids, cat.id],
-                      });
-                    } else {
-                      setForm({
-                        ...form,
-                        category_ids: form.category_ids.filter((id) => id !== cat.id),
-                      });
-                    }
-                  }}
-                  className="w-4 h-4 cursor-pointer"
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e.target.files?.[0])}
+                  disabled={uploading}
+                  className="hidden"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{cat.name}</span>
-              </label>
-            ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <img
+                  src={form.featured_image}
+                  alt="Featured"
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, featured_image: "" })}
+                  disabled={uploading}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                >
+                  <X size={16} />
+                  Remove Image
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -232,7 +257,9 @@ export default function PublishArticlePage() {
 
         {/* SEO */}
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-3">SEO Settings</h3>
+          <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-3">
+            SEO Settings
+          </h3>
           <div className="space-y-3">
             <div>
               <label className="block text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">
@@ -241,7 +268,9 @@ export default function PublishArticlePage() {
               <input
                 type="text"
                 value={form.seo_title}
-                onChange={(e) => setForm({ ...form, seo_title: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, seo_title: e.target.value })
+                }
                 placeholder="Leave empty to use article title"
                 className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded text-sm text-blue-900 dark:text-blue-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
@@ -253,7 +282,9 @@ export default function PublishArticlePage() {
               <input
                 type="text"
                 value={form.seo_description}
-                onChange={(e) => setForm({ ...form, seo_description: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, seo_description: e.target.value })
+                }
                 placeholder="Leave empty to use article excerpt"
                 className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded text-sm text-blue-900 dark:text-blue-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
