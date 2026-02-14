@@ -88,30 +88,7 @@ export async function GET(req) {
       }
     }
 
-    if (type === "roadmaps" || type === "all") {
-      const roadmaps = await query(
-        `SELECT id, slug, title, updated_at FROM roadmaps 
-         ORDER BY id DESC 
-         LIMIT 10000`,
-      );
 
-      if (roadmaps && Array.isArray(roadmaps)) {
-        roadmaps.forEach((roadmap) => {
-          const loc = `${BASE_URL}/roadmaps/${roadmap.slug}`;
-          const lastmod = roadmap.updated_at
-            ? new Date(roadmap.updated_at).toISOString().split("T")[0]
-            : new Date().toISOString().split("T")[0];
-
-          sitemap += `  <url>
-    <loc>${escapeXml(loc)}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-`;
-        });
-      }
-    }
 
     sitemap += `</urlset>`;
 

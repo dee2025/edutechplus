@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 export default function RoadmapCard({ roadmap }) {
-    console.log(roadmap)
   return (
     <Link
       href={`/roadmaps/${roadmap.slug}`}

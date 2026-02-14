@@ -103,7 +103,6 @@ export async function GET(req) {
       articles_viewed_today: articlesViewedToday?.count || 0,
     });
   } catch (err) {
-    console.error("Error fetching analytics overview:", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }

@@ -88,7 +88,6 @@ export async function POST(req, { params }) {
         inserted = true;
       }
     } catch (dbErr) {
-      console.error("DB error inserting view for article", slug, ":", dbErr);
       // Don't fail the request if view insertion fails - still return current counts
     }
 
@@ -122,7 +121,7 @@ export async function POST(req, { params }) {
 
     return NextResponse.json({ views: views_total, views_today });
   } catch (err) {
-    console.error("Error in view tracking route:", err);
+
     return NextResponse.json(
       { message: "Error tracking view" },
       { status: 500 },

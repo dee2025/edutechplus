@@ -19,12 +19,9 @@ async function getSitemapStats() {
     const categories = await query(
       "SELECT COUNT(*) as count FROM categories WHERE parent_id IS NULL",
     );
-    const roadmaps = await query("SELECT COUNT(*) as count FROM roadmaps");
-
     return {
       articles: articles?.[0]?.count || 0,
       categories: categories?.[0]?.count || 0,
-      roadmaps: roadmaps?.[0]?.count || 0,
     };
   } catch (error) {
     console.error("Error fetching stats:", error);
@@ -34,7 +31,7 @@ async function getSitemapStats() {
 
 export default async function SitemapSetupPage() {
   const stats = await getSitemapStats();
-  const totalURLs = 10 + stats.articles + stats.categories + stats.roadmaps; // 10 static pages
+  const totalURLs = 10 + stats.articles + stats.categories; // 10 static pages
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-8">

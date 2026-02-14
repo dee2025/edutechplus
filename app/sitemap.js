@@ -91,37 +91,7 @@ async function generateDynamicPages() {
       });
     }
 
-    // Get roadmaps count
-    const roadmapsResult = await query(
-      "SELECT COUNT(*) as count FROM roadmaps",
-    );
-    const roadmapsCount = roadmapsResult?.[0]?.count || 0;
-    const roadmapPages = Math.ceil(roadmapsCount / ITEMS_PER_PAGE);
 
-    for (let i = 1; i <= roadmapPages; i++) {
-      pages.push({
-        url: `/roadmaps?page=${i}`,
-        lastModified: new Date(),
-        priority: 0.8,
-        changefreq: "weekly",
-      });
-    }
-
-    // Get individual roadmaps
-    const roadmaps = await query(
-      "SELECT id, slug FROM roadmaps ORDER BY id DESC LIMIT 1000",
-    );
-
-    if (roadmaps && Array.isArray(roadmaps)) {
-      roadmaps.forEach((roadmap) => {
-        pages.push({
-          url: `/roadmaps/${roadmap.slug}`,
-          lastModified: new Date(),
-          priority: 0.7,
-          changefreq: "weekly",
-        });
-      });
-    }
   } catch (error) {
     console.error("Error generating dynamic sitemap pages:", error);
   }

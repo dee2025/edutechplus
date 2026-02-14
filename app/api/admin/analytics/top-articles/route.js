@@ -65,7 +65,6 @@ export async function GET(req) {
       articles: topArticles,
     });
   } catch (err) {
-    console.error("Error fetching top articles:", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }

@@ -91,7 +91,6 @@ export async function GET(req) {
       last_hour_top_article: lastHourTopArticle?.[0] || null,
     });
   } catch (err) {
-    console.error("Error fetching recent views:", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }

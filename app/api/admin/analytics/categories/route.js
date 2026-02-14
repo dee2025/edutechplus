@@ -70,7 +70,6 @@ export async function GET(req) {
       count: categoryBreakdownWithPercent.length,
     });
   } catch (err) {
-    console.error("Error fetching category breakdown:", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }

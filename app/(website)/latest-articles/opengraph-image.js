@@ -35,7 +35,7 @@ export default function OpenGraphImage() {
       >
         Edu Tech Pluse
       </div>
-      <div>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <div style={{ fontSize: 64, fontWeight: 700, lineHeight: 1.1 }}>
           {title}
         </div>

@@ -70,7 +70,6 @@ export async function GET(req) {
       views_by_day_of_week: viewsByDayOfWeek,
     });
   } catch (err) {
-    console.error("Error fetching chart data:", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }

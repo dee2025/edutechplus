@@ -54,7 +54,6 @@ export async function GET(req, { params }) {
       },
     );
   } catch (err) {
-    console.error("Error in public article route:", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
