@@ -14,7 +14,7 @@ export async function GET(req) {
     // Fetch full user data from database using email
     const users = await query({
       query:
-        "SELECT id, name, email, avatar_url, created_at FROM users WHERE email = ?",
+        "SELECT id, name, email, avatar_url, provider, provider_id, email_verified, created_at FROM users WHERE email = ?",
       values: [session.user.email],
     });
 

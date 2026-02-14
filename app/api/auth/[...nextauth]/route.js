@@ -73,21 +73,25 @@ const handler = NextAuth({
             // Create new user from Google profile (NULL password for OAuth users)
             await query({
               query:
-                "INSERT INTO users (name, email, password, avatar_url, is_active) VALUES (?, ?, NULL, ?, 1)",
+                "INSERT INTO users (name, email, password, avatar_url, provider, provider_id, email_verified, is_active) VALUES (?, ?, NULL, ?, ?, ?, NOW(), 1)",
               values: [
                 user.name || profile?.name || "User",
                 user.email,
                 user.image || null,
+                "google",
+                profile?.sub || account?.providerAccountId,
               ],
             });
           } else {
-            // Update existing user with Google info if needed
+            // Update existing user with Google info and track provider
             await query({
               query:
-                "UPDATE users SET name = ?, avatar_url = ? WHERE email = ?",
+                "UPDATE users SET name = ?, avatar_url = ?, provider = ?, provider_id = ?, email_verified = NOW() WHERE email = ?",
               values: [
                 user.name || existingUsers[0].name,
                 user.image || null,
+                "google",
+                profile?.sub || account?.providerAccountId,
                 user.email,
               ],
             });
