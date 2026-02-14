@@ -65,13 +65,13 @@ const handler = NextAuth({
         try {
           // Check if user exists
           const existingUsers = await query({
-            query: "SELECT id FROM users WHERE email = ?",
+            query: "SELECT id, name, avatar_url FROM users WHERE email = ?",
             values: [user.email],
           });
 
           if (existingUsers.length === 0) {
             // Create new user from Google profile (NULL password for OAuth users)
-            await query({
+            const result = await query({
               query:
                 "INSERT INTO users (name, email, password, avatar_url, provider, provider_id, email_verified, is_active) VALUES (?, ?, NULL, ?, ?, ?, NOW(), 1)",
               values: [
@@ -82,6 +82,8 @@ const handler = NextAuth({
                 profile?.sub || account?.providerAccountId,
               ],
             });
+            // Attach the new user ID to the user object
+            user.id = result.insertId.toString();
           } else {
             // Update existing user with Google info and track provider
             await query({
@@ -89,12 +91,14 @@ const handler = NextAuth({
                 "UPDATE users SET name = ?, avatar_url = ?, provider = ?, provider_id = ?, email_verified = NOW() WHERE email = ?",
               values: [
                 user.name || existingUsers[0].name,
-                user.image || null,
+                user.image || existingUsers[0].avatar_url,
                 "google",
                 profile?.sub || account?.providerAccountId,
                 user.email,
               ],
             });
+            // Attach existing user ID to the user object
+            user.id = existingUsers[0].id.toString();
           }
 
           return true;
@@ -104,7 +108,21 @@ const handler = NextAuth({
         }
       }
 
-      // Handle credentials sign in
+      // Handle credentials sign in - fetch user ID from database
+      if (!account?.provider || account?.provider === "credentials") {
+        try {
+          const users = await query({
+            query: "SELECT id FROM users WHERE email = ?",
+            values: [user.email],
+          });
+          if (users.length > 0) {
+            user.id = users[0].id.toString();
+          }
+        } catch (error) {
+          console.error("Error fetching user ID:", error);
+        }
+      }
+
       return true;
     },
     async jwt({ token, user, account }) {

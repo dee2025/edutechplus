@@ -18,7 +18,7 @@ async function runMigration() {
     // Add provider column
     try {
       await connection.execute(
-        "ALTER TABLE users ADD COLUMN provider VARCHAR(50) DEFAULT 'credentials' COMMENT 'OAuth provider (google, credentials, etc)'"
+        "ALTER TABLE users ADD COLUMN provider VARCHAR(50) DEFAULT 'credentials' COMMENT 'OAuth provider (google, credentials, etc)'",
       );
       console.log("✓ Added provider column");
     } catch (err) {
@@ -32,7 +32,7 @@ async function runMigration() {
     // Add provider_id column
     try {
       await connection.execute(
-        "ALTER TABLE users ADD COLUMN provider_id VARCHAR(255) DEFAULT NULL COMMENT 'Provider-specific user ID (e.g., Google sub)'"
+        "ALTER TABLE users ADD COLUMN provider_id VARCHAR(255) DEFAULT NULL COMMENT 'Provider-specific user ID (e.g., Google sub)'",
       );
       console.log("✓ Added provider_id column");
     } catch (err) {
@@ -46,7 +46,7 @@ async function runMigration() {
     // Add email_verified column
     try {
       await connection.execute(
-        "ALTER TABLE users ADD COLUMN email_verified TIMESTAMP NULL COMMENT 'When email was verified'"
+        "ALTER TABLE users ADD COLUMN email_verified TIMESTAMP NULL COMMENT 'When email was verified'",
       );
       console.log("✓ Added email_verified column");
     } catch (err) {
@@ -60,7 +60,7 @@ async function runMigration() {
     // Create index on provider_id
     try {
       await connection.execute(
-        "CREATE INDEX idx_provider_id ON users(provider, provider_id)"
+        "CREATE INDEX idx_provider_id ON users(provider, provider_id)",
       );
       console.log("✓ Created index on provider_id");
     } catch (err) {
