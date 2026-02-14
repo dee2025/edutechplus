@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function EmailTestPage() {
   const [testEmail, setTestEmail] = useState("");
@@ -84,7 +84,9 @@ export default function EmailTestPage() {
 
         {loading ? (
           <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <p className="text-gray-600 dark:text-gray-400">Checking configuration...</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Checking configuration...
+            </p>
           </div>
         ) : (
           <div
@@ -125,7 +127,9 @@ export default function EmailTestPage() {
 
                 {configStatus?.missing && configStatus.missing.length > 0 && (
                   <div className="mt-3 text-sm text-red-700 dark:text-red-300">
-                    <p className="font-medium mb-1">Missing environment variables:</p>
+                    <p className="font-medium mb-1">
+                      Missing environment variables:
+                    </p>
                     <ul className="list-disc list-inside space-y-1">
                       {configStatus.missing.map((varName) => (
                         <li key={varName} className="font-mono">
@@ -200,8 +204,8 @@ export default function EmailTestPage() {
                 testStatus === "success"
                   ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
                   : testStatus === "error"
-                  ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
-                  : ""
+                    ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
+                    : ""
               }`}
             >
               {testMessage}
@@ -220,7 +224,7 @@ export default function EmailTestPage() {
           <div>
             <h4 className="font-medium mb-2">1. Add to .env.local:</h4>
             <pre className="bg-white dark:bg-gray-900 p-3 rounded overflow-x-auto text-xs">
-{`SMTP_HOST=smtp.gmail.com
+              {`SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=your-email@gmail.com

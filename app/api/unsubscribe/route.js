@@ -1,6 +1,6 @@
 import { query } from "@/lib/db";
-import { NextResponse } from "next/server";
 import { sendUnsubscribeEmail } from "@/lib/emailService";
+import { NextResponse } from "next/server";
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -53,7 +53,7 @@ export async function POST(request) {
     try {
       const result = await sendUnsubscribeEmail(normalizedEmail);
       if (result.skipped) {
-        console.warn('Unsubscribe email skipped - email not configured');
+        console.warn("Unsubscribe email skipped - email not configured");
       }
     } catch (emailError) {
       console.error("Error sending unsubscribe email:", emailError);

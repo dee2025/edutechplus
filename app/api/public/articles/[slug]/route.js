@@ -6,20 +6,8 @@ export async function GET(req, { params }) {
   const slug = prarm.slug;
 
   try {
-    // Ensure article_views exists (safety)
-    await pool.execute(`
-      CREATE TABLE IF NOT EXISTS article_views (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        article_id INT NOT NULL,
-        user_id INT DEFAULT NULL,
-        ip VARCHAR(45) DEFAULT NULL,
-        user_agent VARCHAR(512) DEFAULT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_article_created (article_id, created_at)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    `);
-
     // 📰 Article + Author + Category, plus aggregated views from article_views
+    // Using a single optimized query instead of multiple queries
     const [[article]] = await pool.execute(
       `
           SELECT 
@@ -27,15 +15,10 @@ export async function GET(req, { params }) {
               ad.name AS author_name,
               c.name AS category_name,
               c.slug AS category_slug,
-              IFNULL(av.views, 0) AS views
+              (SELECT COUNT(*) FROM article_views WHERE article_id = a.id) AS views
           FROM articles a
           JOIN admins ad ON ad.id = a.author_id
           LEFT JOIN categories c ON c.id = a.category_id
-          LEFT JOIN (
-              SELECT article_id, COUNT(*) AS views
-              FROM article_views
-              GROUP BY article_id
-          ) av ON av.article_id = a.id
           WHERE a.slug = ? AND a.status = 'published'
           `,
       [slug],
@@ -45,24 +28,33 @@ export async function GET(req, { params }) {
       return NextResponse.json({ message: "Not found" }, { status: 404 });
     }
 
-    // 🔥 Trending articles (sidebar)
+    // 🔥 Trending articles (sidebar) - should use views, not just recent
     const [trending] = await pool.execute(
       `
-          SELECT a.id, a.title, a.slug, c.slug AS category_slug
+          SELECT 
+              a.id, a.title, a.slug, c.slug AS category_slug,
+              (SELECT COUNT(*) FROM article_views WHERE article_id = a.id) AS views
           FROM articles a
           LEFT JOIN categories c ON c.id = a.category_id
-          WHERE a.status = 'published'
-          ORDER BY a.published_at DESC
+          WHERE a.status = 'published' AND a.id != ?
+          ORDER BY (SELECT COUNT(*) FROM article_views WHERE article_id = a.id) DESC
           LIMIT 5
           `,
+      [article.id],
     );
 
-    return NextResponse.json({
-      article,
-      trending,
-    });
+    // Enable HTTP caching for public articles (1 hour)
+    return NextResponse.json(
+      { article, trending },
+      {
+        headers: {
+          "Cache-Control":
+            "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      },
+    );
   } catch (err) {
-    console.error("Error in public article route", err);
+    console.error("Error in public article route:", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }

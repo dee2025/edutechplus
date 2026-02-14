@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function NewsletterPage() {
   const [subject, setSubject] = useState("");
@@ -29,7 +29,11 @@ export default function NewsletterPage() {
       return;
     }
 
-    if (!confirm("Are you sure you want to send this newsletter to all active subscribers? This action cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you sure you want to send this newsletter to all active subscribers? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
@@ -56,7 +60,7 @@ export default function NewsletterPage() {
         setStatus("success");
         setMessage(data.message);
         setResults(data);
-        
+
         // Clear form on success
         setSubject("");
         setHtmlContent("");
@@ -112,7 +116,8 @@ export default function NewsletterPage() {
                 Email Service Not Configured
               </h3>
               <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-2">
-                You need to configure SMTP settings before you can send newsletters.
+                You need to configure SMTP settings before you can send
+                newsletters.
               </p>
               <a
                 href="/admin/email-test"
@@ -210,7 +215,10 @@ export default function NewsletterPage() {
             <p className="font-medium">{message}</p>
             {results && (
               <div className="mt-2 text-sm">
-                <p>Total: {results.total} | Sent: {results.sent} | Failed: {results.failed}</p>
+                <p>
+                  Total: {results.total} | Sent: {results.sent} | Failed:{" "}
+                  {results.failed}
+                </p>
               </div>
             )}
           </div>
@@ -222,7 +230,7 @@ export default function NewsletterPage() {
             Quick HTML Template Example
           </h3>
           <pre className="text-xs bg-white dark:bg-gray-900 p-4 rounded overflow-x-auto text-gray-800 dark:text-gray-200">
-{`<h2 style="color: #1f2937; margin-bottom: 15px;">This Week in Tech</h2>
+            {`<h2 style="color: #1f2937; margin-bottom: 15px;">This Week in Tech</h2>
 
 <p style="color: #4b5563; line-height: 1.6; margin-bottom: 15px;">
   Here are the top stories from this week...

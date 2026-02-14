@@ -41,7 +41,8 @@ export default function EmailStatusBanner() {
                 Email Service Not Configured
               </p>
               <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
-                Subscribers won't receive welcome emails. Configure SMTP in .env.local or{" "}
+                Subscribers won't receive welcome emails. Configure SMTP in
+                .env.local or{" "}
                 <a
                   href="/admin/email-test"
                   className="underline font-medium hover:text-yellow-900 dark:hover:text-yellow-200"

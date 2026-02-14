@@ -42,10 +42,12 @@ Visit: **`http://localhost:3000/admin/email-test`**
 ### 3. Try It Out!
 
 **For Users:**
+
 - Subscribe on homepage → Check inbox for welcome email
 - Visit `/unsubscribe` → Get confirmation email
 
 **For Admins:**
+
 - `/admin/subscribers` - View and manage subscribers
 - `/admin/newsletter` - Send newsletters to all active subscribers
 
@@ -66,6 +68,7 @@ Visit: **`http://localhost:3000/admin/email-test`**
 1. Sign up at [sendgrid.com](https://sendgrid.com)
 2. Create API Key
 3. Use these settings:
+
 ```env
 SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
@@ -80,18 +83,21 @@ SMTP_PASSWORD=your-sendgrid-api-key
 ## 🎨 Admin Features
 
 ### `/admin/subscribers`
+
 - View all subscribers
 - Filter by status (Active/Unsubscribed)
 - Export to CSV
 - Delete subscribers
 
 ### `/admin/newsletter`
+
 - Create and send newsletters
 - HTML editor with preview
 - Plain text fallback
 - Batch sending to all active subscribers
 
 ### `/admin/email-test`
+
 - Verify email configuration
 - Send test emails
 - Troubleshoot issues
@@ -105,7 +111,7 @@ SMTP_PASSWORD=your-sendgrid-api-key
 POST /api/subscribe
 { "email": "user@example.com" }
 
-// Unsubscribe  
+// Unsubscribe
 POST /api/unsubscribe
 { "email": "user@example.com" }
 
@@ -132,16 +138,19 @@ POST /api/admin/newsletter/send
 ## 🐛 Troubleshooting
 
 **Email not sending?**
+
 1. Check `/admin/email-test` for configuration status
 2. Verify SMTP credentials are correct
 3. For Gmail: Ensure 2FA is enabled and using App Password
 
 **Emails going to spam?**
+
 - Use verified domain with SPF/DKIM records
 - Use professional email service (SendGrid, SES)
 - Already includes unsubscribe links ✓
 
 **Rate limiting?**
+
 - Gmail: 500/day limit
 - Switch to SendGrid/Mailgun for production
 - Adjust batch delays in `lib/emailService.js`
@@ -151,6 +160,7 @@ POST /api/admin/newsletter/send
 ## 📚 Full Documentation
 
 See **[EMAIL_SYSTEM_SETUP.md](./EMAIL_SYSTEM_SETUP.md)** for:
+
 - Detailed provider setup guides
 - Email template customization
 - Security best practices

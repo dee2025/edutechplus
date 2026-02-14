@@ -8,6 +8,8 @@ const menu = [
   { name: "Subscribers", path: "/admin/subscribers" },
   { name: "Newsletter", path: "/admin/newsletter" },
   { name: "Email Test", path: "/admin/email-test" },
+  { name: "📊 View Analytics", path: "/admin/analytics" },
+  { name: "🔴 Live Monitor", path: "/admin/views-monitor" },
   { name: "Admins", path: "/admin/admins" },
 ];
 

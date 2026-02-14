@@ -1,6 +1,6 @@
 import { query } from "@/lib/db";
-import { NextResponse } from "next/server";
 import { sendWelcomeEmail } from "@/lib/emailService";
+import { NextResponse } from "next/server";
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,18 +36,18 @@ export async function POST(request) {
             "UPDATE subscribers SET status = 'active', subscribed_at = NOW(), unsubscribed_at = NULL WHERE id = ?",
           values: [subscriber.id],
         });
-        
+
         // Send welcome back email
         try {
           const result = await sendWelcomeEmail(normalizedEmail);
           if (result.skipped) {
-            console.warn('Welcome email skipped - email not configured');
+            console.warn("Welcome email skipped - email not configured");
           }
         } catch (emailError) {
           console.error("Error sending welcome email:", emailError);
           // Don't fail the subscription if email fails
         }
-        
+
         return NextResponse.json(
           { message: "Welcome back! Your subscription has been reactivated." },
           { status: 200 },
@@ -70,7 +70,7 @@ export async function POST(request) {
     try {
       const result = await sendWelcomeEmail(normalizedEmail);
       if (result.skipped) {
-        console.warn('Welcome email skipped - email not configured');
+        console.warn("Welcome email skipped - email not configured");
       }
     } catch (emailError) {
       console.error("Error sending welcome email:", emailError);

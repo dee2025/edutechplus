@@ -19,6 +19,7 @@ Complete guide for setting up and using the newsletter email system in ArticleGr
 ### 1. Install Dependencies
 
 Already installed:
+
 ```bash
 npm install nodemailer  ✓
 npm install dotenv      ✓
@@ -118,6 +119,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ## 📨 Email Types & Templates
 
 ### 1. Welcome Email
+
 **Trigger:** User subscribes to newsletter
 **Sent by:** `/api/subscribe`
 **Template:** Professional gradient header, features list, CTA button
@@ -126,14 +128,17 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 Edit `lib/emailService.js` → `sendWelcomeEmail()` function
 
 ### 2. Unsubscribe Confirmation
+
 **Trigger:** User unsubscribes
 **Sent by:** `/api/unsubscribe`  
 **Template:** Simple confirmation with re-subscribe link
 
 ### 3. Custom Newsletter
+
 **Trigger:** Admin sends via `/admin/newsletter`
 **Template:** Flexible HTML + plain text content
 **Features:**
+
 - Custom subject line
 - Rich HTML content
 - Plain text fallback
@@ -146,11 +151,13 @@ Edit `lib/emailService.js` → `sendWelcomeEmail()` function
 ### For Users
 
 **Subscribe:**
+
 1. Enter email in newsletter form on homepage
 2. Click "Subscribe"
 3. Check inbox for welcome email
 
 **Unsubscribe:**
+
 1. Visit `/unsubscribe` or click link in any email
 2. Enter email address
 3. Confirm unsubscription
@@ -158,12 +165,14 @@ Edit `lib/emailService.js` → `sendWelcomeEmail()` function
 ### For Admins
 
 **View Subscribers:**
+
 1. Login to admin panel
 2. Go to "Subscribers" in sidebar
 3. Filter by status (All/Active/Unsubscribed)
 4. Export to CSV if needed
 
 **Send Newsletter:**
+
 1. Go to "Newsletter" in admin sidebar
 2. Enter subject line
 3. Write HTML content (with inline styles)
@@ -173,6 +182,7 @@ Edit `lib/emailService.js` → `sendWelcomeEmail()` function
 7. Confirm to send to all active subscribers
 
 **Test Email Configuration:**
+
 1. Go to "Email Test" in admin sidebar
 2. View configuration status
 3. Send test email to yourself
@@ -183,6 +193,7 @@ Edit `lib/emailService.js` → `sendWelcomeEmail()` function
 ## 🛠️ API Endpoints
 
 ### Subscribe
+
 ```http
 POST /api/subscribe
 Content-Type: application/json
@@ -193,12 +204,14 @@ Content-Type: application/json
 ```
 
 **Responses:**
+
 - `201` - New subscription created (welcome email sent)
 - `200` - Reactivated previous subscription (welcome email sent)
 - `409` - Already subscribed
 - `400` - Invalid email
 
 ### Unsubscribe
+
 ```http
 POST /api/unsubscribe
 Content-Type: application/json
@@ -209,11 +222,13 @@ Content-Type: application/json
 ```
 
 **Responses:**
+
 - `200` - Unsubscribed successfully (confirmation email sent)
 - `404` - Email not found
 - `400` - Already unsubscribed
 
 ### Send Newsletter (Admin)
+
 ```http
 POST /api/admin/newsletter/send
 Content-Type: application/json
@@ -226,6 +241,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Newsletter sent successfully",
@@ -241,16 +257,19 @@ Content-Type: application/json
 ## 📊 Email Service Features
 
 ### Batch Processing
+
 - Sends 50 emails per batch
 - 1-second delay between batches
 - Prevents SMTP rate limiting
 
 ### Error Handling
+
 - Individual email failures don't stop the batch
 - Detailed error reporting
 - Subscription/unsubscription succeeds even if email fails
 
 ### Email Formatting
+
 - Responsive HTML templates
 - Inline CSS for compatibility
 - Plain text fallback
@@ -266,6 +285,7 @@ Content-Type: application/json
 Location: `lib/emailService.js` → `sendWelcomeEmail()`
 
 **Key sections to customize:**
+
 - Header gradient colors
 - Welcome message text
 - Feature list items
@@ -273,6 +293,7 @@ Location: `lib/emailService.js` → `sendWelcomeEmail()`
 - Footer text
 
 **Example modification:**
+
 ```javascript
 // Change gradient colors
 background: linear-gradient(135deg, #YOUR_COLOR_1 0%, #YOUR_COLOR_2 100%);
@@ -289,11 +310,13 @@ background: linear-gradient(135deg, #YOUR_COLOR_1 0%, #YOUR_COLOR_2 100%);
 Location: `lib/emailService.js` → `sendNewsletterEmail()`
 
 The newsletter uses your custom HTML content wrapped in a branded template with:
+
 - Header with logo
 - Your content in the body
 - Footer with unsubscribe link
 
 **HTML Content Best Practices:**
+
 ```html
 <!-- Use inline styles -->
 <h2 style="color: #1f2937; margin-bottom: 15px;">Heading</h2>
@@ -302,12 +325,17 @@ The newsletter uses your custom HTML content wrapped in a branded template with:
 <img src="URL" alt="Description" style="max-width: 100%; height: auto;" />
 
 <!-- Call-to-action buttons -->
-<a href="URL" style="display: inline-block; background: #06b6d4; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+<a
+  href="URL"
+  style="display: inline-block; background: #06b6d4; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px;"
+>
   Click Here
 </a>
 
 <!-- Content boxes -->
-<div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+<div
+  style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;"
+>
   Box content
 </div>
 ```
@@ -319,11 +347,13 @@ The newsletter uses your custom HTML content wrapped in a branded template with:
 ### Email Not Sending
 
 **Check Configuration:**
+
 1. Visit `/admin/email-test`
 2. Verify all environment variables are set
 3. Check SMTP credentials are correct
 
 **Common Issues:**
+
 - **"Authentication failed"** → Wrong username/password
 - **"Connection timeout"** → Wrong host/port or firewall blocking
 - **"Self-signed certificate"** → Set `SMTP_SECURE=false` for port 587
@@ -331,6 +361,7 @@ The newsletter uses your custom HTML content wrapped in a branded template with:
 ### Emails Going to Spam
 
 **Solutions:**
+
 1. **Use a verified domain** - Set up SPF, DKIM, DMARC records
 2. **Use professional email service** - SendGrid, Mailgun, SES
 3. **Include unsubscribe link** - Already included in templates
@@ -349,6 +380,7 @@ The newsletter uses your custom HTML content wrapped in a branded template with:
 **Symptoms:** Some emails fail after several succeed
 
 **Solutions:**
+
 - **Gmail:** Max 500 emails/day (free), 2000/day (Workspace)
 - **SendGrid:** 100 emails/day (free), more with paid plans
 - Increase delay between batches in `emailService.js`
@@ -359,12 +391,14 @@ The newsletter uses your custom HTML content wrapped in a branded template with:
 ## 📈 Best Practices
 
 ### Development
+
 - ✅ Use Gmail App Password for testing
 - ✅ Test with your own email first
 - ✅ Check both HTML and text versions
 - ✅ Preview emails before sending
 
 ### Production
+
 - ✅ Use professional email service (SendGrid, SES, Mailgun)
 - ✅ Set up SPF, DKIM, and DMARC records
 - ✅ Use a verified domain
@@ -374,6 +408,7 @@ The newsletter uses your custom HTML content wrapped in a branded template with:
 - ✅ Respect unsubscribe requests immediately
 
 ### Email Content
+
 - ✅ Clear, concise subject lines (< 50 characters)
 - ✅ Personalization when possible
 - ✅ Mobile-responsive design
@@ -387,18 +422,21 @@ The newsletter uses your custom HTML content wrapped in a branded template with:
 ## 🔐 Security Considerations
 
 ### Environment Variables
+
 - ❌ Never commit `.env.local` to Git
 - ✅ Use `.gitignore` to exclude it
 - ✅ Use different credentials for dev/prod
 - ✅ Rotate passwords regularly
 
 ### Email Validation
+
 - ✅ Regex validation on both client and server
 - ✅ Email normalization (lowercase, trim)
 - ✅ Rate limiting on subscribe/unsubscribe endpoints
 - ✅ CAPTCHA for high-traffic sites (optional)
 
 ### Data Protection
+
 - ✅ Store only necessary data (email, status, dates)
 - ✅ Encrypt email credentials
 - ✅ Comply with GDPR/CAN-SPAM
@@ -409,6 +447,7 @@ The newsletter uses your custom HTML content wrapped in a branded template with:
 ## 📝 Files Created/Modified
 
 ### New Files
+
 - `lib/emailService.js` - Core email functions
 - `app/api/subscribe/route.js` - Updated with email sending
 - `app/api/unsubscribe/route.js` - Updated with email sending
@@ -419,6 +458,7 @@ The newsletter uses your custom HTML content wrapped in a branded template with:
 - `.env.email.example` - Environment variables example
 
 ### Modified Files
+
 - `components/admin/Sidebar.jsx` - Added Newsletter & Email Test links
 - `package.json` - Added nodemailer dependency
 

@@ -5,30 +5,33 @@ export async function GET() {
   try {
     // Check if email credentials are configured
     const requiredVars = [
-      'SMTP_HOST',
-      'SMTP_PORT',
-      'SMTP_USER',
-      'SMTP_PASSWORD',
-      'SMTP_FROM_NAME',
-      'SMTP_FROM_EMAIL',
+      "SMTP_HOST",
+      "SMTP_PORT",
+      "SMTP_USER",
+      "SMTP_PASSWORD",
+      "SMTP_FROM_NAME",
+      "SMTP_FROM_EMAIL",
     ];
 
-    const missing = requiredVars.filter(varName => !process.env[varName]);
+    const missing = requiredVars.filter((varName) => !process.env[varName]);
 
     if (missing.length > 0) {
-      return NextResponse.json({
-        status: "error",
-        message: "Missing email configuration",
-        missing,
-        help: "Add these variables to your .env.local file"
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Missing email configuration",
+          missing,
+          help: "Add these variables to your .env.local file",
+        },
+        { status: 400 },
+      );
     }
 
     // Try to create a connection
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === 'true',
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
@@ -45,15 +48,18 @@ export async function GET() {
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
         from: `${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>`,
-      }
+      },
     });
   } catch (error) {
-    return NextResponse.json({
-      status: "error",
-      message: "Email configuration test failed",
-      error: error.message,
-      help: "Check your SMTP credentials and make sure the server is accessible"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        status: "error",
+        message: "Email configuration test failed",
+        error: error.message,
+        help: "Check your SMTP credentials and make sure the server is accessible",
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -62,16 +68,19 @@ export async function POST(request) {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json({
-        status: "error",
-        message: "Email address is required"
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Email address is required",
+        },
+        { status: 400 },
+      );
     }
 
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === 'true',
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
@@ -100,10 +109,13 @@ export async function POST(request) {
       message: `Test email sent successfully to ${email}!`,
     });
   } catch (error) {
-    return NextResponse.json({
-      status: "error",
-      message: "Failed to send test email",
-      error: error.message,
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        status: "error",
+        message: "Failed to send test email",
+        error: error.message,
+      },
+      { status: 500 },
+    );
   }
 }
