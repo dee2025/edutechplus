@@ -121,7 +121,6 @@ export async function POST(req, { params }) {
 
     return NextResponse.json({ views: views_total, views_today });
   } catch (err) {
-
     return NextResponse.json(
       { message: "Error tracking view" },
       { status: 500 },

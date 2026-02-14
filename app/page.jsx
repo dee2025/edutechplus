@@ -11,7 +11,7 @@ export default function Home() {
     <div className="min-h-screen bg-white dark:bg-black">
       <Hero />
       <TrendingTopics />
-      <AITutorSection />
+      {/* <AITutorSection /> */}
       <LatestNews />
       <FeaturedStory />
       <CategoryBlocks />

@@ -90,8 +90,6 @@ async function generateDynamicPages() {
         });
       });
     }
-
-
   } catch (error) {
     console.error("Error generating dynamic sitemap pages:", error);
   }

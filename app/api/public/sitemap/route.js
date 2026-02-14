@@ -88,8 +88,6 @@ export async function GET(req) {
       }
     }
 
-
-
     sitemap += `</urlset>`;
 
     return new NextResponse(sitemap, {
