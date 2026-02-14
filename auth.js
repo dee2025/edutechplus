@@ -65,32 +65,40 @@ const config = {
         try {
           // Check if user exists
           const existingUsers = await query({
-            query: "SELECT id FROM users WHERE email = ?",
+            query: "SELECT id, name, avatar_url FROM users WHERE email = ?",
             values: [user.email],
           });
 
           if (existingUsers.length === 0) {
-            // Create new user from Google profile
-            await query({
+            // Create new user from Google profile (NULL password for OAuth users)
+            const result = await query({
               query:
-                "INSERT INTO users (name, email, avatar_url, is_active) VALUES (?, ?, ?, 1)",
+                "INSERT INTO users (name, email, password, avatar_url, provider, provider_id, email_verified, is_active) VALUES (?, ?, NULL, ?, ?, ?, NOW(), 1)",
               values: [
                 user.name || profile?.name || "User",
                 user.email,
                 user.image || null,
+                "google",
+                profile?.sub || account?.providerAccountId,
               ],
             });
+            // Attach the new user ID to the user object
+            user.id = result.insertId.toString();
           } else {
-            // Update existing user with Google info if needed
+            // Update existing user with Google info and track provider
             await query({
               query:
-                "UPDATE users SET name = ?, avatar_url = ? WHERE email = ?",
+                "UPDATE users SET name = ?, avatar_url = ?, provider = ?, provider_id = ?, email_verified = NOW() WHERE email = ?",
               values: [
                 user.name || existingUsers[0].name,
-                user.image || null,
+                user.image || existingUsers[0].avatar_url,
+                "google",
+                profile?.sub || account?.providerAccountId,
                 user.email,
               ],
             });
+            // Attach existing user ID to the user object
+            user.id = existingUsers[0].id.toString();
           }
 
           return true;
@@ -100,17 +108,46 @@ const config = {
         }
       }
 
-      // Handle credentials sign in
+      // Handle credentials sign in - fetch user ID from database
+      if (!account?.provider || account?.provider === "credentials") {
+        try {
+          const users = await query({
+            query: "SELECT id FROM users WHERE email = ?",
+            values: [user.email],
+          });
+          if (users.length > 0) {
+            user.id = users[0].id.toString();
+          }
+        } catch (error) {
+          console.error("Error fetching user ID:", error);
+        }
+      }
+
       return true;
     },
-    async jwt({ token, user }) {
-      if (user) {
+    async jwt({ token, user, account }) {
+      // If this is the first sign in, use the user ID
+      if (user?.id) {
         token.id = user.id;
       }
+
+      // For subsequent requests, ensure we have the user ID
+      if (!token.id && token.email) {
+        const users = await query({
+          query: "SELECT id FROM users WHERE email = ?",
+          values: [token.email],
+        });
+        if (users.length > 0) {
+          token.id = users[0].id.toString();
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
-      session.user.id = token.id;
+      if (token.id) {
+        session.user.id = token.id;
+      }
       return session;
     },
   },

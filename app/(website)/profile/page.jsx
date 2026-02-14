@@ -21,6 +21,11 @@ export default function ProfilePage() {
   const { data: session, status } = useSession();
 
   useEffect(() => {
+    // If still loading, don't redirect yet
+    if (status === "loading") {
+      return;
+    }
+
     // Redirect to login if not authenticated
     if (status === "unauthenticated") {
       router.push("/auth/login");
@@ -200,6 +205,18 @@ export default function ProfilePage() {
       console.error(err);
       toast.error("Server error");
     }
+  }
+
+  // Show loading screen while checking session
+  if (status === "loading" || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0b0f19]">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Loading your profile...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
