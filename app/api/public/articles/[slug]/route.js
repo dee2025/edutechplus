@@ -48,10 +48,11 @@ export async function GET(req, { params }) {
     // 🔥 Trending articles (sidebar)
     const [trending] = await pool.execute(
       `
-          SELECT id, title, slug
-          FROM articles
-          WHERE status = 'published'
-          ORDER BY published_at DESC
+          SELECT a.id, a.title, a.slug, c.slug AS category_slug
+          FROM articles a
+          LEFT JOIN categories c ON c.id = a.category_id
+          WHERE a.status = 'published'
+          ORDER BY a.published_at DESC
           LIMIT 5
           `,
     );

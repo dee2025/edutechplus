@@ -18,18 +18,21 @@ export default async function LatestNews() {
   const articles = await getTrendingArticles();
 
   if (!articles.length) return null;
+  const getArticleUrl = (item) => `/${item.category_slug}/${item.slug}`;
 
   return (
-    <section className="bg-[#0b0f19] py-10">
+    <section className="bg-white dark:bg-[#0b0f19] py-10">
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-xl font-bold text-gray-100 mb-6">Latest Updates</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          Latest Updates
+        </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.map((article) => (
             <Link
               key={article.id}
-              href={`/articles/${article.slug}`}
-              className="group rounded-xl overflow-hidden bg-[#111827] hover:bg-[#1f2937] transition"
+              href={getArticleUrl(article)}
+              className="group rounded-xl overflow-hidden bg-gray-50 dark:bg-[#111827] hover:bg-gray-100 dark:hover:bg-[#1f2937] transition"
             >
               {article.featured_image && (
                 <Image
@@ -46,11 +49,11 @@ export default async function LatestNews() {
                   {article.category_name}
                 </span>
 
-                <h3 className="mt-2 font-semibold text-gray-100 leading-snug">
+                <h3 className="mt-2 font-semibold text-gray-900 dark:text-gray-100 leading-snug">
                   {article.title}
                 </h3>
 
-                <p className="mt-2 text-sm text-gray-400 line-clamp-2">
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                   {article.excerpt}
                 </p>
               </div>

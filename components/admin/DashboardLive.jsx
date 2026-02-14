@@ -103,7 +103,7 @@ export default function DashboardLive() {
                 <li key={a.id} className="flex items-center justify-between">
                   <div>
                     <Link
-                      href={`/articles/${a.slug}`}
+                      href={`/${a.category_slug}/${a.slug}`}
                       className="text-sm text-gray-100 hover:underline"
                     >
                       {a.title}

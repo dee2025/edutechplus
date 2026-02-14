@@ -69,7 +69,7 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor } from "@tiptap/react";
 import axios from "axios";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import "./../../../app/component.css";
 import "./EditorButtons.css";
 
@@ -247,6 +247,15 @@ export default ({ content, onChange }) => {
     },
     [],
   );
+
+  useEffect(() => {
+    if (!editor) return;
+    if (content === undefined || content === null) return;
+    const current = editor.getHTML();
+    if (current !== content) {
+      editor.commands.setContent(content, false);
+    }
+  }, [editor, content]);
 
   const setLink = useCallback(() => {
     const previousUrl = editor.getAttributes("link").href;

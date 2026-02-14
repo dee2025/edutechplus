@@ -18,7 +18,10 @@ export async function GET(req) {
         SELECT
             a.id,
             a.title,
+            a.slug,
+            a.featured_image,
             a.status,
+            c.name as category_name,
             af.is_featured,
             af.is_trending,
             af.is_editors_pick,
@@ -26,6 +29,8 @@ export async function GET(req) {
             af.trending_order
         FROM articles a
         JOIN article_flags af ON af.article_id = a.id
+        LEFT JOIN categories c ON c.id = a.category_id
+        WHERE a.status = 'published'
         ORDER BY a.created_at DESC
     `);
 

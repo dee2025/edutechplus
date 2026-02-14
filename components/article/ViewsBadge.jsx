@@ -1,5 +1,6 @@
 "use client";
 
+import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function ViewsBadge({ slug, initial = 0 }) {
@@ -22,5 +23,10 @@ export default function ViewsBadge({ slug, initial = 0 }) {
       });
   }, [slug]);
 
-  return <span className="text-gray-400">{views.toLocaleString()} views</span>;
+  return (
+    <div className="flex items-center gap-1">
+      <Eye className="w-3 h-3" />
+      <span>{views.toLocaleString()} views</span>
+    </div>
+  );
 }

@@ -33,8 +33,10 @@ export async function generateMetadata({ params }) {
   const title = article.seo_title || article.title;
   const description = article.seo_description || article.excerpt;
 
-  const base = process.env.NEXT_PUBLIC_BASE_URL || "";
-  const url = `${base}/articles/${article.slug}`;
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+  const canonicalPath = `/${article.category_slug}/${article.slug}`;
+  const url = base ? `${base}${canonicalPath}` : canonicalPath;
 
   const openGraph = {
     title,
@@ -90,8 +92,11 @@ export default async function ArticlePage({ params }) {
     faqs = [];
   }
 
-  // Base URL for absolute links in JSON-LD. Use NEXT_PUBLIC_BASE_URL when set, else empty string.
-  const base = process.env.NEXT_PUBLIC_BASE_URL || "";
+  // Base URL for absolute links in JSON-LD.
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+  const canonicalPath = `/${article.category_slug}/${article.slug}`;
+  const canonicalUrl = base ? `${base}${canonicalPath}` : canonicalPath;
 
   /* ---------- SCHEMAS ---------- */
 
@@ -109,15 +114,11 @@ export default async function ArticlePage({ params }) {
     },
     publisher: {
       "@type": "Organization",
-      name: "Your Website Name",
-      logo: {
-        "@type": "ImageObject",
-        url: `${base}/logo.png`,
-      },
+      name: "Edu Tech Pluse",
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${process.env.NEXT_PUBLIC_BASE_URL}/articles/${article.slug}`,
+      "@id": canonicalUrl,
     },
   };
 
@@ -138,34 +139,44 @@ export default async function ArticlePage({ params }) {
       : null;
 
   return (
-    <main className="bg-[#0b0f19] min-h-screen">
-      {/* -------- JSON-LD SCHEMA -------- */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(articleSchema),
-        }}
-      />
-      {faqSchema && (
+    <main className="bg-white dark:bg-[#0b0f19] min-h-screen">
+      <div>
+        {/* -------- JSON-LD SCHEMA -------- */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqSchema),
+            __html: JSON.stringify(articleSchema),
           }}
         />
-      )}
+        {faqSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(faqSchema),
+            }}
+          />
+        )}
+      </div>
 
       <ArticleHeader article={article} categories={categories} />
 
-      <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8">
-          <ArticleContent article={article} />
-          <TrackViewClient article={article} />
-          {/* Comments */}
-          <Comments slug={article.slug} />
-        </div>
-        <div className="lg:col-span-4">
-          <ArticleSidebar trending={trending} />
+      <div className="max-w-7xl mx-auto px-4 py-8 lg:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+          <div className="lg:col-span-8">
+            <div className="bg-white dark:bg-transparent">
+              <ArticleContent article={article} />
+              <TrackViewClient article={article} />
+
+              {/* Article Footer Divider */}
+              <div className="mt-12 mb-10 border-t border-gray-200 dark:border-gray-800"></div>
+
+              {/* Comments */}
+              <Comments slug={article.slug} />
+            </div>
+          </div>
+          <div className="lg:col-span-4">
+            <ArticleSidebar trending={trending} />
+          </div>
         </div>
       </div>
     </main>

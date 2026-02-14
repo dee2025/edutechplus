@@ -1,11 +1,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
 
+@config "../tailwind.config.ts";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+}
+
+.dark {
+  --background: #0b0f19;
+  --foreground: #ededed;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   /* font-family: "Open Sans", sans-serif !important; */
   font-family: "Montserrat", sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Streak calendar animation */
@@ -46,6 +61,249 @@ body {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
 }
 
-
-
 /* content render  */
+
+/* TipTap Editor Read-Only Styling */
+.tiptap-readonly {
+  @apply text-base leading-relaxed;
+}
+
+.tiptap-readonly .ProseMirror {
+  @apply focus:outline-none;
+}
+
+/* Headings */
+.tiptap-readonly h1 {
+  @apply text-4xl font-black mb-6 mt-12 text-gray-900 dark:text-gray-100 tracking-tight;
+}
+
+.tiptap-readonly h2 {
+  @apply text-3xl font-black mb-6 mt-12 pb-3 border-b border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 tracking-tight;
+}
+
+.tiptap-readonly h3 {
+  @apply text-2xl font-bold mb-4 mt-8 text-gray-900 dark:text-gray-100 tracking-tight;
+}
+
+.tiptap-readonly h4 {
+  @apply text-xl font-bold mb-3 mt-6 text-gray-900 dark:text-gray-100;
+}
+
+.tiptap-readonly h5 {
+  @apply text-lg font-bold mb-2 mt-4 text-gray-900 dark:text-gray-100;
+}
+
+.tiptap-readonly h6 {
+  @apply text-base font-bold mb-2 mt-3 text-gray-900 dark:text-gray-100;
+}
+
+/* Paragraphs */
+.tiptap-readonly p {
+  @apply mb-6 leading-8 text-gray-700 dark:text-gray-300;
+}
+
+/* First paragraph drop cap */
+.tiptap-readonly > div > p:first-of-type::first-letter {
+  @apply text-6xl font-black float-left mr-3 leading-none text-cyan-600 dark:text-cyan-400;
+}
+
+/* Links */
+.tiptap-readonly a {
+  @apply text-cyan-600 dark:text-cyan-400 font-medium no-underline hover:underline hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors;
+}
+
+/* Strong/Bold */
+.tiptap-readonly strong {
+  @apply font-bold text-gray-900 dark:text-gray-100;
+}
+
+/* Emphasis/Italic */
+.tiptap-readonly em {
+  @apply italic text-gray-700 dark:text-gray-300;
+}
+
+/* Underline */
+.tiptap-readonly u {
+  @apply underline decoration-cyan-500 dark:decoration-cyan-400;
+}
+
+/* Strike */
+.tiptap-readonly s {
+  @apply line-through opacity-75;
+}
+
+/* Code inline - styles for inline code snippets */
+.tiptap-readonly code {
+  @apply px-2 py-1 bg-gray-100 dark:bg-gray-900 text-pink-600 dark:text-pink-400 rounded font-mono text-sm border border-gray-200 dark:border-gray-700;
+}
+
+/* Code blocks - vs code theme wrapper */
+.tiptap-readonly pre {
+  @apply bg-gray-950 border border-gray-700 rounded-lg p-5 my-8 overflow-x-auto shadow-lg max-w-full;
+  line-height: 1.6;
+  font-size: 13px;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  background-color: #1e1e1e !important;
+}
+
+/* Code inside pre - reset and apply highlighting-safe styles */
+.tiptap-readonly pre code {
+  @apply text-gray-100 font-mono;
+  display: block;
+  background: transparent !important;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  line-height: 1.6;
+}
+
+/* Syntax highlighting colors - VS Code theme */
+.tiptap-readonly pre code .token {
+  @apply text-gray-100;
+}
+
+.tiptap-readonly pre code .token.keyword {
+  @apply text-blue-400;
+}
+
+.tiptap-readonly pre code .token.string {
+  @apply text-green-400;
+}
+
+.tiptap-readonly pre code .token.number {
+  @apply text-orange-300;
+}
+
+.tiptap-readonly pre code .token.function {
+  @apply text-yellow-300;
+}
+
+.tiptap-readonly pre code .token.class-name {
+  @apply text-cyan-300;
+}
+
+.tiptap-readonly pre code .token.comment {
+  @apply text-gray-500 italic;
+}
+
+.tiptap-readonly pre code .token.operator {
+  @apply text-gray-300;
+}
+
+.tiptap-readonly pre code .token.tag {
+  @apply text-blue-400;
+}
+
+.tiptap-readonly pre code .token.attr-name {
+  @apply text-yellow-300;
+}
+
+.tiptap-readonly pre code .token.attr-value {
+  @apply text-green-400;
+}
+
+/* Scrollbar styling for code blocks */
+.tiptap-readonly pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tiptap-readonly pre::-webkit-scrollbar-track {
+  @apply bg-gray-900;
+}
+
+.tiptap-readonly pre::-webkit-scrollbar-thumb {
+  @apply bg-gray-700 rounded hover:bg-gray-600;
+}
+
+/* Blockquotes */
+.tiptap-readonly blockquote {
+  @apply border-l-4 border-cyan-500 dark:border-cyan-400 pl-6 py-2 my-6 bg-gray-50 dark:bg-gray-900/30 rounded-r-lg italic font-medium text-gray-700 dark:text-gray-300;
+}
+
+/* Horizontal Rule */
+.tiptap-readonly hr {
+  @apply border-gray-200 dark:border-gray-800 my-12;
+}
+
+/* Lists */
+.tiptap-readonly ul {
+  @apply list-disc pl-6 my-6 space-y-2;
+}
+
+.tiptap-readonly ol {
+  @apply list-decimal pl-6 my-6 space-y-2;
+}
+
+.tiptap-readonly li {
+  @apply text-gray-700 dark:text-gray-300 leading-7;
+}
+
+.tiptap-readonly li::marker {
+  @apply text-cyan-600 dark:text-cyan-400;
+}
+
+/* Nested lists */
+.tiptap-readonly ul ul,
+.tiptap-readonly ol ol,
+.tiptap-readonly ul ol,
+.tiptap-readonly ol ul {
+  @apply my-2;
+}
+
+/* Images */
+.tiptap-readonly img {
+  @apply rounded-xl shadow-lg my-8 max-w-full h-auto border border-gray-200 dark:border-gray-800;
+}
+
+/* Tables */
+.tiptap-readonly table {
+  @apply w-full border-collapse my-8 overflow-hidden rounded-lg shadow-md border border-gray-300 dark:border-gray-700;
+}
+
+.tiptap-readonly thead {
+  @apply bg-gray-100 dark:bg-gray-900;
+}
+
+.tiptap-readonly th {
+  @apply px-4 py-3 text-left font-bold text-gray-900 dark:text-gray-100 border-b-2 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900;
+}
+
+.tiptap-readonly td {
+  @apply px-4 py-3 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300;
+}
+
+.tiptap-readonly tr:hover {
+  @apply bg-gray-50 dark:bg-gray-900/50;
+}
+
+/* Text Alignment */
+.tiptap-readonly [style*="text-align: left"] {
+  @apply text-left;
+}
+
+.tiptap-readonly [style*="text-align: center"] {
+  @apply text-center;
+}
+
+.tiptap-readonly [style*="text-align: right"] {
+  @apply text-right;
+}
+
+.tiptap-readonly [style*="text-align: justify"] {
+  @apply text-justify;
+}
+
+/* Highlight */
+.tiptap-readonly mark {
+  @apply bg-yellow-200 dark:bg-yellow-900/50 px-1 rounded;
+}
+
+/* Hard Break */
+.tiptap-readonly br {
+  @apply block h-4;
+}

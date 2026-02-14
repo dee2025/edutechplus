@@ -1,5 +1,6 @@
 import Sidebar from '@/components/admin/Sidebar';
 import Topbar from '@/components/admin/Topbar';
+import EmailStatusBanner from '@/components/admin/EmailStatusBanner';
 
 export default function AdminLayout({ children }) {
     return (
@@ -8,6 +9,7 @@ export default function AdminLayout({ children }) {
 
             <div className="flex-1 flex flex-col">
                 <Topbar />
+                <EmailStatusBanner />
                 <main className="flex-1 p-6">
                     {children}
                 </main>

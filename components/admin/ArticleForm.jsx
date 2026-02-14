@@ -1,7 +1,15 @@
 "use client";
 
 import slugify from "@/lib/slugify";
-import { FileText, Image, Save, Search, Tag } from "lucide-react";
+import {
+  FileText,
+  Image,
+  Loader2,
+  Save,
+  Search,
+  Sparkles,
+  Tag,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import Editor from "./ui/Editor";
@@ -35,6 +43,8 @@ export default function ArticleForm({
   const [readingTimeEdited, setReadingTimeEdited] = useState(
     Boolean(initialData.read_time),
   );
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiOverwrite, setAiOverwrite] = useState(false);
 
   // Flatten hierarchical categories for the dropdown
   const flattenCategories = (cats) => {
@@ -110,6 +120,74 @@ export default function ArticleForm({
     }
   };
 
+  const handleGenerateAi = async () => {
+    const title = form.title?.trim();
+    if (!title) {
+      toast.error("Add a title first");
+      return;
+    }
+
+    const categoryNames = (form.category_ids || [])
+      .map((id) => categories.find((c) => c.id === id)?.name)
+      .filter(Boolean);
+
+    if (!categoryNames.length) {
+      toast.error("Select at least one category");
+      return;
+    }
+
+    setAiLoading(true);
+    try {
+      const res = await fetch("/api/admin/ai-article", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, categories: categoryNames }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.message || "AI generation failed");
+      }
+
+      const data = await res.json();
+
+      setForm((prev) => {
+        const next = { ...prev };
+        const maybeSet = (key, value) => {
+          if (value === undefined || value === null || value === "") return;
+          if (aiOverwrite || !next[key]) next[key] = value;
+        };
+
+        maybeSet("subtitle", data.subtitle);
+        maybeSet("excerpt", data.excerpt);
+        maybeSet("content", data.content_html);
+        maybeSet("seo_title", data.seo_title);
+        maybeSet("seo_description", data.seo_description);
+
+        if (data.tags) {
+          const tags = Array.isArray(data.tags)
+            ? data.tags.join(", ")
+            : data.tags;
+          if (aiOverwrite || !next.tags) next.tags = tags;
+        }
+
+        if (data.read_time) {
+          if (aiOverwrite || !next.read_time)
+            next.read_time = Number(data.read_time);
+        }
+
+        return next;
+      });
+
+      if (data.read_time) setReadingTimeEdited(true);
+      toast.success("AI draft generated");
+    } catch (error) {
+      toast.error(error?.message || "AI generation failed");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Main column */}
@@ -124,6 +202,35 @@ export default function ArticleForm({
                 className="w-full px-4 py-3 bg-[#0b0f19] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-cyan-400"
                 placeholder="Article title"
               />
+              <div className="mt-3 rounded-lg border border-gray-800 bg-[#0b0f19] p-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="text-xs text-gray-400">
+                    Generate full article from title + categories
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleGenerateAi}
+                    disabled={aiLoading}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded bg-cyan-500 text-black hover:bg-cyan-400 disabled:opacity-60"
+                  >
+                    {aiLoading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3.5 h-3.5" />
+                    )}
+                    {aiLoading ? "Generating..." : "Generate with AI"}
+                  </button>
+                </div>
+                <label className="mt-2 inline-flex items-center gap-2 text-xs text-gray-400">
+                  <input
+                    type="checkbox"
+                    checked={aiOverwrite}
+                    onChange={(e) => setAiOverwrite(e.target.checked)}
+                    className="h-3.5 w-3.5 accent-cyan-400"
+                  />
+                  Overwrite existing fields
+                </label>
+              </div>
             </div>
 
             <div>

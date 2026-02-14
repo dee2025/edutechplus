@@ -88,7 +88,13 @@ export async function GET(req) {
 
     if (listMode) {
       const [rows] = await pool.execute(
-        `SELECT id, article_id, slug, title, read_date, created_at FROM user_reads WHERE user_id = ? AND read_date >= ? ORDER BY read_date DESC, created_at DESC LIMIT ?`,
+        `SELECT ur.id, ur.article_id, ur.slug, ur.title, ur.read_date, ur.created_at, c.slug AS category_slug
+         FROM user_reads ur
+         LEFT JOIN articles a ON a.id = ur.article_id
+         LEFT JOIN categories c ON c.id = a.category_id
+         WHERE ur.user_id = ? AND ur.read_date >= ?
+         ORDER BY ur.read_date DESC, ur.created_at DESC
+         LIMIT ?`,
         [userId, startDate, limit],
       );
 
@@ -96,6 +102,7 @@ export async function GET(req) {
         id: r.id,
         article_id: r.article_id || null,
         slug: r.slug,
+        category_slug: r.category_slug || null,
         title: r.title || null,
         read_date:
           r.read_date instanceof Date

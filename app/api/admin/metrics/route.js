@@ -63,8 +63,9 @@ export async function GET(req) {
 
   const [topArticles] = await pool.execute(
     `
-      SELECT a.id, a.title, a.slug, IFNULL(v.views,0) AS views
+      SELECT a.id, a.title, a.slug, c.slug AS category_slug, IFNULL(v.views,0) AS views
       FROM articles a
+      LEFT JOIN categories c ON c.id = a.category_id
       LEFT JOIN (
           SELECT article_id, COUNT(*) AS views
           FROM article_views

@@ -142,18 +142,18 @@ export default function ProfilePage() {
 
   if (loading)
     return (
-      <div className="p-6">
-        <div className="animate-pulse bg-[#0b0f19] border border-gray-800 rounded p-6 max-w-3xl mx-auto">
-          <div className="h-8 bg-gray-800 rounded w-1/3 mb-4" />
-          <div className="h-32 bg-gray-800 rounded w-full" />
+      <div className="p-6 bg-white dark:bg-[#0b0f19] min-h-screen">
+        <div className="animate-pulse bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-6 max-w-3xl mx-auto">
+          <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-1/3 mb-4" />
+          <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded w-full" />
         </div>
       </div>
     );
 
   if (!user)
     return (
-      <div className="p-6">
-        <p className="text-gray-300">
+      <div className="p-6 bg-white dark:bg-[#0b0f19] min-h-screen">
+        <p className="text-gray-700 dark:text-gray-300">
           You need to be logged in to view this page.
         </p>
       </div>
@@ -184,19 +184,19 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-      <h1 className="text-2xl font-semibold text-gray-100 mb-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 bg-white dark:bg-[#0b0f19] min-h-screen">
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
         Your Profile
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Profile Card */}
         <aside className="lg:col-span-4">
-          <div className="bg-[#0b0f19] border border-gray-800 rounded-xl p-6 sticky top-6">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 sticky top-6">
             <div className="flex flex-col items-center text-center">
               {/* Avatar */}
               <div
-                className="w-32 h-32 rounded-full bg-[#111827] border border-gray-700 overflow-hidden flex items-center justify-center cursor-pointer transition hover:scale-[1.02]"
+                className="w-32 h-32 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 overflow-hidden flex items-center justify-center cursor-pointer transition hover:scale-[1.02]"
                 onClick={() => document.getElementById("avatar-input")?.click()}
                 role="button"
                 tabIndex={0}
@@ -208,7 +208,7 @@ export default function ProfilePage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-3xl font-semibold text-gray-200">
+                  <span className="text-3xl font-semibold text-gray-700 dark:text-gray-200">
                     {(form.name || user.email)[0]?.toUpperCase()}
                   </span>
                 )}
@@ -216,13 +216,15 @@ export default function ProfilePage() {
 
               {/* Identity */}
               <div className="mt-4">
-                <p className="text-lg font-semibold text-gray-100">
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {form.name || "Unnamed User"}
                 </p>
-                <p className="text-xs text-gray-400">{user.email}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  {user.email}
+                </p>
               </div>
 
-              <div className="mt-3 text-xs text-gray-500">
+              <div className="mt-3 text-xs text-gray-500 dark:text-gray-500">
                 Member since {new Date(user.created_at).toLocaleDateString()}
               </div>
 
@@ -232,7 +234,7 @@ export default function ProfilePage() {
                   onClick={() =>
                     document.getElementById("avatar-input")?.click()
                   }
-                  className="w-full py-2 bg-[#111827] hover:bg-[#151820] rounded text-gray-200 text-sm"
+                  className="w-full py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-gray-900 dark:text-gray-200 text-sm transition-colors"
                 >
                   Change avatar
                 </button>
@@ -242,7 +244,7 @@ export default function ProfilePage() {
                     navigator.clipboard?.writeText(user.email);
                     toast.success("Email copied");
                   }}
-                  className="w-full py-2 bg-[#111827] hover:bg-[#151820] rounded text-gray-200 text-sm"
+                  className="w-full py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-gray-900 dark:text-gray-200 text-sm transition-colors"
                 >
                   Copy email
                 </button>
@@ -254,21 +256,23 @@ export default function ProfilePage() {
         {/* Main Content */}
         <section className="lg:col-span-8 space-y-6">
           {/* Edit Profile */}
-          <div className="bg-[#0b0f19] border border-gray-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
             <form onSubmit={handleSave} className="space-y-5">
               {/* Name */}
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Name</label>
+                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  Name
+                </label>
                 <input
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#111827] border border-gray-700 rounded-md text-gray-200 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400"
                 />
               </div>
 
               {/* Avatar Upload */}
               <div>
-                <label className="block text-xs text-gray-400 mb-2">
+                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-2">
                   Avatar
                 </label>
 
@@ -286,7 +290,7 @@ export default function ProfilePage() {
                     onClick={() =>
                       document.getElementById("avatar-input")?.click()
                     }
-                    className="px-3 py-2 bg-[#111827] hover:bg-[#151820] rounded text-sm text-gray-200"
+                    className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-sm text-gray-900 dark:text-gray-200 transition-colors"
                   >
                     Choose image
                   </button>
@@ -295,13 +299,13 @@ export default function ProfilePage() {
                     <button
                       type="button"
                       onClick={handleRemoveAvatar}
-                      className="px-3 py-2 bg-red-600 hover:bg-red-700 rounded text-sm text-white"
+                      className="px-3 py-2 bg-red-600 hover:bg-red-700 rounded text-sm text-white transition-colors"
                     >
                       Remove
                     </button>
                   )}
 
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-500">
                     PNG, JPG, WEBP · max 3MB
                   </span>
                 </div>
@@ -312,7 +316,7 @@ export default function ProfilePage() {
                     <img
                       src={previewUrl}
                       alt="Preview"
-                      className="w-20 h-20 rounded-md object-cover border border-gray-700"
+                      className="w-20 h-20 rounded-md object-cover border border-gray-300 dark:border-gray-700"
                     />
 
                     {!uploading && (
@@ -320,7 +324,7 @@ export default function ProfilePage() {
                         <button
                           type="button"
                           onClick={handleUpload}
-                          className="px-3 py-1.5 bg-cyan-400 text-black rounded font-semibold text-sm"
+                          className="px-3 py-1.5 bg-cyan-600 dark:bg-cyan-600 text-white rounded font-semibold text-sm transition-colors"
                         >
                           Upload
                         </button>
@@ -330,7 +334,7 @@ export default function ProfilePage() {
                             setSelectedFile(null);
                             setPreviewUrl(null);
                           }}
-                          className="px-3 py-1.5 bg-[#111827] text-gray-300 rounded text-sm"
+                          className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded text-sm transition-colors"
                         >
                           Cancel
                         </button>
@@ -342,13 +346,13 @@ export default function ProfilePage() {
                 {/* Progress */}
                 {uploading && (
                   <div className="mt-3">
-                    <div className="h-2 bg-gray-700 rounded overflow-hidden">
+                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
                       <div
-                        className="h-full bg-cyan-400 transition-all"
+                        className="h-full bg-cyan-600 dark:bg-cyan-400 transition-all"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                       Uploading {progress}%
                     </p>
                   </div>
@@ -362,8 +366,8 @@ export default function ProfilePage() {
                   disabled={!dirty}
                   className={`px-5 py-2 rounded font-semibold transition ${
                     dirty
-                      ? "bg-cyan-400 text-black"
-                      : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                      ? "bg-cyan-600 dark:bg-cyan-600 text-white hover:bg-cyan-700 dark:hover:bg-cyan-700"
+                      : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                   }`}
                 >
                   Save changes
@@ -372,12 +376,12 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => router.push("/")}
-                  className="px-4 py-2 bg-[#111827] rounded text-gray-300"
+                  className="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 >
                   Cancel
                 </button>
 
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 dark:text-gray-500">
                   {dirty ? "Unsaved changes" : "No changes"}
                 </span>
               </div>

@@ -20,6 +20,7 @@ export default function RecentReads({ max = 10 }) {
           if (canceled) return;
           const list = (json.list || []).map((it) => ({
             slug: it.slug,
+            category_slug: it.category_slug || null,
             title: it.title || "(untitled)",
             ts: it.created_at ? new Date(it.created_at).getTime() : Date.now(),
             featured_image: null,
@@ -70,25 +71,48 @@ export default function RecentReads({ max = 10 }) {
 
   if (!items || items.length === 0) {
     return (
-      <div className="bg-[#0b0f19] border border-gray-800 rounded p-4">
-        <h3 className="text-sm font-semibold text-gray-100 mb-2">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-4">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
           Recently read
         </h3>
-        <p className="text-xs text-gray-400">No recently-read articles yet.</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          No recently-read articles yet.
+        </p>
+      </div>
+    );
+  }
+
+  const visibleItems = items.filter((it) => it.category_slug);
+
+  if (!visibleItems.length) {
+    return (
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-4">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          Recently read
+        </h3>
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          No recently-read articles yet.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#0b0f19] border border-gray-800 rounded p-4">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-gray-100">Recently read</h3>
-          {synced && <span className="text-xs text-green-400">Synced</span>}
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            Recently read
+          </h3>
+          {synced && (
+            <span className="text-xs text-green-600 dark:text-green-400">
+              Synced
+            </span>
+          )}
         </div>
         <button
           onClick={handleClear}
-          className="text-xs text-gray-400 hover:text-gray-200"
+          className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
           aria-label="Clear recent reads (local)"
         >
           Clear
@@ -96,13 +120,13 @@ export default function RecentReads({ max = 10 }) {
       </div>
 
       <ul className="mt-3 space-y-3">
-        {items.map((it) => (
+        {visibleItems.map((it) => (
           <li key={it.slug} className="flex items-center gap-3">
             <Link
-              href={`/articles/${it.slug}`}
+              href={`/${it.category_slug}/${it.slug}`}
               className="flex items-center gap-3 w-full"
             >
-              <div className="w-12 h-12 rounded-md overflow-hidden bg-[#111827] border border-gray-700 flex-shrink-0">
+              <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex-shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {it.featured_image ? (
                   <img
@@ -111,15 +135,17 @@ export default function RecentReads({ max = 10 }) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                  <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
                     No image
                   </div>
                 )}
               </div>
 
               <div className="min-w-0">
-                <div className="text-sm text-gray-100 truncate">{it.title}</div>
-                <div className="text-xs text-gray-400">
+                <div className="text-sm text-gray-900 dark:text-gray-100 truncate">
+                  {it.title}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">
                   {new Date(it.ts).toLocaleString()}
                 </div>
               </div>

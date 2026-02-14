@@ -7,7 +7,7 @@
 // export default function ClientLayoutWrapper({ children }) {
 //   const pathname = usePathname();
 //   const isAdmin = pathname.startsWith("/admin");
-//   const isAITutor = pathname.startsWith("/ai-tutor"); 
+//   const isAITutor = pathname.startsWith("/ai-tutor");
 
 //   return (
 //     <>
@@ -21,13 +21,12 @@
 //   );
 // }
 
-
 "use client";
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import Header from "@/components/Common/Header";
 import Footer from "@/components/Common/Footer";
+import Header from "@/components/Common/Header";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function ClientLayoutWrapper({ children }) {
   const pathname = usePathname();
@@ -39,7 +38,7 @@ export default function ClientLayoutWrapper({ children }) {
     <>
       {!isAdmin && !isAITutor && <Header />}
 
-      <div className="bg-[#0b0f19] relative">
+      <div className="bg-white dark:bg-[#0b0f19] relative transition-colors">
         {children}
 
         {/* 🔥 ABSOLUTE AI TUTOR BUTTON */}

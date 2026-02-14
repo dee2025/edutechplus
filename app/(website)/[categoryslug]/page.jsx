@@ -16,6 +16,39 @@ async function getCategory(slug) {
   }
 }
 
+export async function generateMetadata({ params }) {
+  const param = await params;
+  const slug = param.categoryslug;
+  const data = await getCategory(slug);
+  if (!data || !data.category) return {};
+
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+  const canonicalPath = `/${slug}`;
+  const canonicalUrl = base ? `${base}${canonicalPath}` : canonicalPath;
+  const title = `${data.category.name} Articles`;
+  const description =
+    data.category.description ||
+    `Browse the latest ${data.category.name} articles and updates.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
+
 export default async function CategoryPage({ params }) {
   const param = await params;
   const slug = param.categoryslug;
@@ -32,6 +65,7 @@ export default async function CategoryPage({ params }) {
           <CategoryFeed
             articles={data.articles}
             categoryName={data.category.name}
+            categorySlug={data.category.slug}
           />
         </div>
         <div className="lg:col-span-4">

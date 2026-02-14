@@ -18,8 +18,10 @@ export default async function FeaturedStory() {
   const article = await getFeaturedStory();
   if (!article) return null;
 
+  const articleUrl = `/${article.category_slug}/${article.slug}`;
+
   return (
-    <section className="bg-[#111827] py-14">
+    <section className="bg-gray-50 dark:bg-[#111827] py-14">
       <div className="w-full md:max-w-7xl mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
         {/* Image */}
         {article.featured_image && (
@@ -39,14 +41,16 @@ export default async function FeaturedStory() {
             FEATURED STORY
           </span>
 
-          <h2 className="mt-3 text-3xl font-bold text-gray-100 leading-tight">
+          <h2 className="mt-3 text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
             {article.title}
           </h2>
 
-          <p className="mt-4 text-gray-400">{article.excerpt}</p>
+          <p className="mt-4 text-gray-700 dark:text-gray-400">
+            {article.excerpt}
+          </p>
 
           <Link
-            href={`/articles/${article.slug}`}
+            href={articleUrl}
             className="inline-block mt-6 text-cyan-400 font-semibold hover:underline"
           >
             Read Full Story →

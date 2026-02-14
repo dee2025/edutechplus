@@ -2,6 +2,24 @@ import pool from "@/lib/db";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 
+const MIN_PUBLISHED_WORDS = 800;
+
+function countWordsFromHtml(html) {
+  if (!html) return 0;
+  const text = html
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text ? text.split(" ").length : 0;
+}
+
+function hasRequiredHeadings(html) {
+  return /<h2\b|<h3\b/i.test(html || "");
+}
+
 function getToken(req) {
   return req.cookies.get("admin_auth_token")?.value;
 }
@@ -23,7 +41,7 @@ export async function GET(req, { params }) {
   const [article] = await pool.execute(
     `SELECT a.*, JSON_ARRAYAGG(JSON_OBJECT('id', c.id, 'name', c.name)) AS categories
      FROM articles a
-     LEFT JOIN categories ac ON ac.article_id = a.id
+     LEFT JOIN article_categories ac ON ac.article_id = a.id
      LEFT JOIN categories c ON c.id = ac.category_id
      WHERE a.id = ?
      GROUP BY a.id`,
@@ -107,6 +125,25 @@ export async function PUT(req, { params }) {
     publishedAt = new Date();
   }
 
+  if (finalStatus === "published") {
+    const wordCount = countWordsFromHtml(content);
+    if (wordCount < MIN_PUBLISHED_WORDS) {
+      return NextResponse.json(
+        {
+          message: `Published articles must be at least ${MIN_PUBLISHED_WORDS} words.`,
+        },
+        { status: 400 },
+      );
+    }
+
+    if (!hasRequiredHeadings(content)) {
+      return NextResponse.json(
+        { message: "Published articles must include H2 or H3 headings." },
+        { status: 400 },
+      );
+    }
+  }
+
   try {
     await pool.execute(
       `
@@ -148,7 +185,9 @@ export async function PUT(req, { params }) {
     );
 
     // Update categories: delete old ones and insert new ones
-    await pool.execute("DELETE FROM categories WHERE article_id = ?", [id]);
+    await pool.execute("DELETE FROM article_categories WHERE article_id = ?", [
+      id,
+    ]);
 
     if (
       category_ids &&
@@ -157,7 +196,7 @@ export async function PUT(req, { params }) {
     ) {
       for (const catId of category_ids) {
         await pool.execute(
-          "INSERT INTO categories (article_id, category_id) VALUES (?, ?)",
+          "INSERT INTO article_categories (article_id, category_id) VALUES (?, ?)",
           [id, catId],
         );
       }
@@ -196,7 +235,9 @@ export async function DELETE(req, { params }) {
 
   await pool.execute("DELETE FROM article_flags WHERE article_id = ?", [id]);
 
-  await pool.execute("DELETE FROM categories WHERE article_id = ?", [id]);
+  await pool.execute("DELETE FROM article_categories WHERE article_id = ?", [
+    id,
+  ]);
 
   return NextResponse.json({ message: "Article deleted" });
 }

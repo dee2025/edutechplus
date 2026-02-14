@@ -19,14 +19,15 @@ export default async function HeroNews() {
   if (!articles.length) return null;
 
   const [main, ...secondary] = articles;
+  const getArticleUrl = (item) => `/${item.category_slug}/${item.slug}`;
 
   return (
-    <section className="bg-[#0b0f19] py-10">
+    <section className="bg-white dark:bg-[#0b0f19] py-10">
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* MAIN HERO */}
         {main && (
           <Link
-            href={`/articles/${main.slug}`}
+            href={getArticleUrl(main)}
             className="relative lg:col-span-2 lg:row-span-2 rounded-xl overflow-hidden group min-h-[400px]"
           >
             <Image
@@ -57,7 +58,7 @@ export default async function HeroNews() {
         {secondary.map((item) => (
           <Link
             key={item.id}
-            href={`/articles/${item.slug}`}
+            href={getArticleUrl(item)}
             className="relative rounded-xl overflow-hidden group h-48"
           >
             <Image

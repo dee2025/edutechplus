@@ -27,6 +27,7 @@ export default function TrackViewClient({ article }) {
         slug: article.slug,
         title: article.title,
         featured_image: article.featured_image || null,
+        category_slug: article.category_slug || null,
         ts: Date.now(),
       };
 
