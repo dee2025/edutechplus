@@ -2,6 +2,7 @@
 
 import ThemeToggle from "@/components/ThemeToggle";
 import AuthModal from "@/components/UserAuth/AuthModal";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -13,20 +14,27 @@ const Header = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const router = useRouter();
   const profileRef = useRef(null);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    // load current user
-    async function load() {
-      try {
-        const res = await fetch("/api/auth/me");
-        if (!res.ok) return setUser(null);
-        const json = await res.json();
-        setUser(json);
-      } catch (err) {
+    // Load user data when session is available
+    async function loadUserData() {
+      if (session?.user?.email) {
+        try {
+          const res = await fetch("/api/auth/me");
+          if (res.ok) {
+            const json = await res.json();
+            setUser(json);
+          }
+        } catch (err) {
+          console.error("Failed to load user data:", err);
+        }
+      } else {
         setUser(null);
       }
     }
-    load();
+
+    loadUserData();
 
     function onDocClick(e) {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -35,17 +43,17 @@ const Header = () => {
     }
     // listen for profile/avatar updates from other pages (e.g., profile upload)
     document.addEventListener("click", onDocClick);
-    document.addEventListener("user-updated", load);
+    document.addEventListener("user-updated", loadUserData);
     return () => {
       document.removeEventListener("click", onDocClick);
-      document.removeEventListener("user-updated", load);
+      document.removeEventListener("user-updated", loadUserData);
     };
-  }, []);
+  }, [session]);
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await signOut({ redirect: false });
     setUser(null);
-    router.refresh();
+    router.push("/");
   }
 
   function avatarInitials(name) {

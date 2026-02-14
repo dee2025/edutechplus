@@ -1,23 +1,30 @@
-import { verifyToken } from "@/lib/auth";
-import pool from "@/lib/db";
+import { query } from "@/lib/db";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
   try {
-    const token = req.cookies.get("auth_token")?.value;
-    if (!token) return NextResponse.json(null);
+    // Use NextAuth to get the session
+    const session = await getServerSession();
 
-    const payload = await verifyToken(token);
-    const userId = payload.id;
+    if (!session?.user?.email) {
+      return NextResponse.json(null);
+    }
 
-    const [rows] = await pool.execute(
-      "SELECT id, name, email, avatar_url, created_at FROM users WHERE id = ?",
-      [userId],
-    );
-    if (!rows.length) return NextResponse.json(null);
+    // Fetch full user data from database using email
+    const users = await query({
+      query:
+        "SELECT id, name, email, avatar_url, created_at FROM users WHERE email = ?",
+      values: [session.user.email],
+    });
 
-    return NextResponse.json(rows[0]);
+    if (users.length === 0) {
+      return NextResponse.json(null);
+    }
+
+    return NextResponse.json(users[0]);
   } catch (err) {
+    console.error("Error fetching user:", err);
     return NextResponse.json(null);
   }
 }

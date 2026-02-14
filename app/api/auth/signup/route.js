@@ -1,5 +1,4 @@
-import { signToken } from "@/lib/auth";
-import pool from "@/lib/db";
+import { query } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 
@@ -7,59 +6,54 @@ export async function POST(req) {
   try {
     const { name, email, password } = await req.json();
 
+    // Validation
     if (!name || !email || !password) {
       return NextResponse.json(
-        { message: "Name, email and password required" },
+        { message: "All fields are required" },
         { status: 400 },
       );
     }
 
-    const hashed = await bcrypt.hash(password, 10);
-
-    try {
-      const [result] = await pool.execute(
-        "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-        [name, email, hashed],
-      );
-
-      const token = await signToken({
-        id: result.insertId,
-        role: "user",
-        email,
-      });
-
-      const response = NextResponse.json({
-        message: "User created",
-        user_id: result.insertId,
-      });
-
-      response.cookies.set("auth_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-
-      return response;
-    } catch (err) {
-      console.error(err);
-      if (err?.code === "ER_DUP_ENTRY") {
-        return NextResponse.json(
-          { message: "Email already registered" },
-          { status: 409 },
-        );
-      }
+    if (password.length < 6) {
       return NextResponse.json(
-        {
-          message:
-            "Failed to create user. Ensure DB has `users` table via migration.",
-        },
-        { status: 500 },
+        { message: "Password must be at least 6 characters" },
+        { status: 400 },
       );
     }
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+
+    // Check if user already exists
+    const existingUsers = await query({
+      query: "SELECT id FROM users WHERE email = ?",
+      values: [email],
+    });
+
+    if (existingUsers.length > 0) {
+      return NextResponse.json(
+        { message: "User already exists with this email" },
+        { status: 400 },
+      );
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create user
+    await query({
+      query:
+        "INSERT INTO users (name, email, password, is_active) VALUES (?, ?, ?, 1)",
+      values: [name, email, hashedPassword],
+    });
+
+    return NextResponse.json(
+      { message: "User created successfully" },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error("Signup error:", error);
+    return NextResponse.json(
+      { message: "Failed to create user" },
+      { status: 500 },
+    );
   }
 }

@@ -2,6 +2,7 @@
 
 import RecentReads from "@/components/profile/RecentReads";
 import StreakCalendar from "@/components/profile/StreakCalendar";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -17,6 +18,43 @@ export default function ProfilePage() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    if (status === "unauthenticated") {
+      router.push("/auth/login");
+      return;
+    }
+
+    // Load user data when session is available
+    if (status === "authenticated" && session?.user) {
+      loadUserData();
+    }
+  }, [status, session, router]);
+
+  async function loadUserData() {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      const json = await res.json();
+      setUser(json);
+      setForm({ name: json.name || "", avatar_url: json.avatar_url || "" });
+      setInitialForm({
+        name: json.name || "",
+        avatar_url: json.avatar_url || "",
+      });
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to load user:", err);
+      setUser(null);
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     // compute dirty state
@@ -119,28 +157,7 @@ export default function ProfilePage() {
     xhr.send(fd);
   }
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/auth/profile");
-        if (!res.ok) return setUser(null);
-        const json = await res.json();
-        if (!json) return setUser(null);
-        setUser(json);
-        const f = { name: json.name || "", avatar_url: json.avatar_url || "" };
-        setForm(f);
-        setInitialForm(f);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
-
-  if (loading)
+  if (loading || status === "loading") {
     return (
       <div className="p-6 bg-white dark:bg-[#0b0f19] min-h-screen">
         <div className="animate-pulse bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-6 max-w-3xl mx-auto">
@@ -149,8 +166,9 @@ export default function ProfilePage() {
         </div>
       </div>
     );
+  }
 
-  if (!user)
+  if (!user) {
     return (
       <div className="p-6 bg-white dark:bg-[#0b0f19] min-h-screen">
         <p className="text-gray-700 dark:text-gray-300">
@@ -158,6 +176,7 @@ export default function ProfilePage() {
         </p>
       </div>
     );
+  }
 
   async function handleSave(e) {
     e.preventDefault();

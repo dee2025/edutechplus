@@ -1,16 +1,28 @@
-import { verifyToken } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
-import pool from "@/lib/db";
+import { query } from "@/lib/db";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const token = req.cookies.get("auth_token")?.value;
-    if (!token)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // Use NextAuth to get the session
+    const session = await getServerSession();
 
-    const payload = await verifyToken(token);
-    const userId = payload.id;
+    if (!session?.user?.email) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get user ID from database using email
+    const users = await query({
+      query: "SELECT id FROM users WHERE email = ?",
+      values: [session.user.email],
+    });
+
+    if (users.length === 0) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    const userId = users[0].id;
 
     const form = await req.formData();
     const file = form.get("avatar");
@@ -52,10 +64,10 @@ export async function POST(req) {
     });
 
     // Persist avatar URL to user record
-    await pool.execute("UPDATE users SET avatar_url = ? WHERE id = ?", [
-      result.secure_url,
-      userId,
-    ]);
+    await query({
+      query: "UPDATE users SET avatar_url = ? WHERE id = ?",
+      values: [result.secure_url, userId],
+    });
 
     return NextResponse.json({
       secure_url: result.secure_url,

@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/components/AuthProvider";
 import ClientLayoutWrapper from "@/components/ClientLayoutWrapper";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Analytics } from "@vercel/analytics/next";
@@ -101,11 +102,13 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          <Analytics />
-          <Toaster position="top-center" reverseOrder={false} />
-          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <Analytics />
+            <Toaster position="top-center" reverseOrder={false} />
+            <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

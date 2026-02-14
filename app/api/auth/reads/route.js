@@ -1,22 +1,27 @@
-import { verifyToken } from "@/lib/auth";
-import pool from "@/lib/db";
+import { query } from "@/lib/db";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const token = req.cookies.get("auth_token")?.value;
-    if (!token)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // Use NextAuth to get the session
+    const session = await getServerSession();
 
-    let payload;
-    try {
-      payload = await verifyToken(token);
-    } catch (e) {
-      // token invalid/expired
+    if (!session?.user?.email) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = payload.id;
+    // Get user ID from database using email
+    const users = await query({
+      query: "SELECT id FROM users WHERE email = ?",
+      values: [session.user.email],
+    });
+
+    if (users.length === 0) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    const userId = users[0].id;
 
     const body = await req.json();
     const slug = (body.slug || "").trim();
@@ -26,29 +31,26 @@ export async function POST(req) {
       return NextResponse.json({ message: "Missing slug" }, { status: 400 });
 
     // find article id if exists
-    const [[article]] = await pool.execute(
-      "SELECT id FROM articles WHERE slug = ? AND status = 'published'",
-      [slug],
-    );
-    const articleId = article ? article.id : null;
+    const articles = await query({
+      query: "SELECT id FROM articles WHERE slug = ? AND status = 'published'",
+      values: [slug],
+    });
+    const articleId = articles.length > 0 ? articles[0].id : null;
 
     // insert or update (unique constraint prevents duplicates per day)
     try {
-      const [res] = await pool.execute(
-        `INSERT INTO user_reads (user_id, article_id, slug, title, read_date) VALUES (?, ?, ?, ?, CURDATE()) ON DUPLICATE KEY UPDATE created_at = NOW()`,
-        [userId, articleId, slug, title],
-      );
+      await query({
+        query: `INSERT INTO user_reads (user_id, article_id, slug, title, read_date) VALUES (?, ?, ?, ?, CURDATE()) ON DUPLICATE KEY UPDATE created_at = NOW()`,
+        values: [userId, articleId, slug, title],
+      });
 
-      // res may be an OkPacket with affectedRows/insertId (mysql2)
-      const affected = res && (res.affectedRows || res.affected_rows || 0);
-      console.debug("Recorded read", { userId, articleId, slug, affected });
+      console.debug("Recorded read", { userId, articleId, slug });
 
       return NextResponse.json({
         message: "Recorded",
         userId,
         articleId,
         slug,
-        affected,
       });
     } catch (dbErr) {
       console.error("DB error recording read:", dbErr);
@@ -66,12 +68,24 @@ export async function POST(req) {
 
 export async function GET(req) {
   try {
-    const token = req.cookies.get("auth_token")?.value;
-    if (!token)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // Use NextAuth to get the session
+    const session = await getServerSession();
 
-    const payload = await verifyToken(token);
-    const userId = payload.id;
+    if (!session?.user?.email) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get user ID from database using email
+    const users = await query({
+      query: "SELECT id FROM users WHERE email = ?",
+      values: [session.user.email],
+    });
+
+    if (users.length === 0) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    const userId = users[0].id;
 
     const url = new URL(req.url);
     const days = parseInt(url.searchParams.get("days") || "180", 10) || 180;
@@ -87,16 +101,16 @@ export async function GET(req) {
     const startDate = start.toISOString().slice(0, 10);
 
     if (listMode) {
-      const [rows] = await pool.execute(
-        `SELECT ur.id, ur.article_id, ur.slug, ur.title, ur.read_date, ur.created_at, c.slug AS category_slug
+      const rows = await query({
+        query: `SELECT ur.id, ur.article_id, ur.slug, ur.title, ur.read_date, ur.created_at, c.slug AS category_slug
          FROM user_reads ur
          LEFT JOIN articles a ON a.id = ur.article_id
          LEFT JOIN categories c ON c.id = a.category_id
          WHERE ur.user_id = ? AND ur.read_date >= ?
          ORDER BY ur.read_date DESC, ur.created_at DESC
          LIMIT ?`,
-        [userId, startDate, limit],
-      );
+        values: [userId, startDate, limit],
+      });
 
       const list = rows.map((r) => ({
         id: r.id,
@@ -125,10 +139,10 @@ export async function GET(req) {
     const summary = url.searchParams.get("summary");
 
     if (summary === "streak") {
-      const [rows2] = await pool.execute(
-        `SELECT DISTINCT read_date FROM user_reads WHERE user_id = ? AND read_date >= ? ORDER BY read_date ASC`,
-        [userId, startDate],
-      );
+      const rows2 = await query({
+        query: `SELECT DISTINCT read_date FROM user_reads WHERE user_id = ? AND read_date >= ? ORDER BY read_date ASC`,
+        values: [userId, startDate],
+      });
 
       const dateSet = new Set(
         rows2.map((r) =>
@@ -173,10 +187,10 @@ export async function GET(req) {
       });
     }
 
-    const [rows] = await pool.execute(
-      `SELECT read_date, COUNT(*) AS cnt FROM user_reads WHERE user_id = ? AND read_date >= ? GROUP BY read_date`,
-      [userId, startDate],
-    );
+    const rows = await query({
+      query: `SELECT read_date, COUNT(*) AS cnt FROM user_reads WHERE user_id = ? AND read_date >= ? GROUP BY read_date`,
+      values: [userId, startDate],
+    });
 
     const counts = {};
     let total = 0;
@@ -198,11 +212,24 @@ export async function GET(req) {
 
 export async function DELETE(req) {
   try {
-    const token = req.cookies.get("auth_token")?.value;
-    if (!token)
+    // Use NextAuth to get the session
+    const session = await getServerSession();
+
+    if (!session?.user?.email) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    const payload = await verifyToken(token);
-    const userId = payload.id;
+    }
+
+    // Get user ID from database using email
+    const users = await query({
+      query: "SELECT id FROM users WHERE email = ?",
+      values: [session.user.email],
+    });
+
+    if (users.length === 0) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    const userId = users[0].id;
 
     const url = new URL(req.url);
     const days = parseInt(url.searchParams.get("days") || "0", 10) || 0;
@@ -211,18 +238,18 @@ export async function DELETE(req) {
       const start = new Date();
       start.setDate(start.getDate() - days + 1);
       const startDate = start.toISOString().slice(0, 10);
-      const [res] = await pool.execute(
-        `DELETE FROM user_reads WHERE user_id = ? AND read_date >= ?`,
-        [userId, startDate],
-      );
-      return NextResponse.json({ deleted: res.affectedRows || 0 });
+      await query({
+        query: `DELETE FROM user_reads WHERE user_id = ? AND read_date >= ?`,
+        values: [userId, startDate],
+      });
+      return NextResponse.json({ deleted: "success" });
     }
 
-    const [res] = await pool.execute(
-      `DELETE FROM user_reads WHERE user_id = ?`,
-      [userId],
-    );
-    return NextResponse.json({ deleted: res.affectedRows || 0 });
+    await query({
+      query: `DELETE FROM user_reads WHERE user_id = ?`,
+      values: [userId],
+    });
+    return NextResponse.json({ deleted: "success" });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });

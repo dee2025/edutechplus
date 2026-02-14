@@ -1,15 +1,27 @@
-import { verifyToken } from "@/lib/auth";
-import pool from "@/lib/db";
+import { query } from "@/lib/db";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function PUT(req) {
   try {
-    const token = req.cookies.get("auth_token")?.value;
-    if (!token)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // Use NextAuth to get the session
+    const session = await getServerSession();
 
-    const payload = await verifyToken(token);
-    const userId = payload.id;
+    if (!session?.user?.email) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get user ID from database using email
+    const users = await query({
+      query: "SELECT id FROM users WHERE email = ?",
+      values: [session.user.email],
+    });
+
+    if (users.length === 0) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    const userId = users[0].id;
 
     const { name, avatar_url } = await req.json();
 
@@ -69,14 +81,15 @@ export async function PUT(req) {
     params.push(userId);
 
     const sql = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
-    await pool.execute(sql, params);
+    await query({ query: sql, values: params });
 
-    const [rows] = await pool.execute(
-      "SELECT id, name, email, avatar_url, created_at FROM users WHERE id = ?",
-      [userId],
-    );
+    const updatedUsers = await query({
+      query:
+        "SELECT id, name, email, avatar_url, created_at FROM users WHERE id = ?",
+      values: [userId],
+    });
 
-    return NextResponse.json(rows[0]);
+    return NextResponse.json(updatedUsers[0]);
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
@@ -85,20 +98,24 @@ export async function PUT(req) {
 
 export async function GET(req) {
   try {
-    const token = req.cookies.get("auth_token")?.value;
-    if (!token) return NextResponse.json(null);
+    // Use NextAuth to get the session
+    const session = await getServerSession();
 
-    const payload = await verifyToken(token);
-    const userId = payload.id;
+    if (!session?.user?.email) {
+      return NextResponse.json(null);
+    }
 
-    const [rows] = await pool.execute(
-      "SELECT id, name, email, avatar_url, created_at FROM users WHERE id = ?",
-      [userId],
-    );
+    const users = await query({
+      query:
+        "SELECT id, name, email, avatar_url, created_at FROM users WHERE email = ?",
+      values: [session.user.email],
+    });
 
-    if (!rows.length) return NextResponse.json(null);
+    if (users.length === 0) {
+      return NextResponse.json(null);
+    }
 
-    return NextResponse.json(rows[0]);
+    return NextResponse.json(users[0]);
   } catch (err) {
     console.error(err);
     return NextResponse.json(null);
