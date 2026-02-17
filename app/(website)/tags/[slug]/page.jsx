@@ -374,7 +374,7 @@ export default function TagPage({ params }) {
                   {/* Author Info */}
                   <div className="flex items-center gap-3 mb-4">
                     <Link
-                      href={`/profile/${article.author_slug || article.author_id}`}
+                      href={`/${article.author_username || article.author_slug || article.author_id}`}
                       className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold hover:scale-110 transition-transform shadow-md"
                     >
                       {article.author_name?.charAt(0)?.toUpperCase() || "A"}

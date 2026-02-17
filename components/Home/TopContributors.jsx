@@ -54,7 +54,7 @@ export default function TopContributors({ initialStats = null }) {
         {stats.top_authors.map((author, index) => (
           <Link
             key={author.id}
-            href={`/profile/${author.username || author.user_slug || author.id}`}
+            href={`/${author.username || author.user_slug || author.id}`}
             className="group flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-gray-800 hover:bg-cyan-50 dark:hover:bg-gray-700 transition-all border border-transparent hover:border-cyan-300 dark:hover:border-cyan-600 shadow-sm hover:shadow-md"
           >
             {/* Medal Badge */}

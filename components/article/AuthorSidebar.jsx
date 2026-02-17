@@ -17,7 +17,7 @@ function formatDate(date) {
 }
 
 export default function AuthorSidebar({ article, latestByAuthor = [] }) {
-  const authorProfileUrl = `/profile/${article.author_username}`;
+  const authorProfileUrl = `/${article.author_username}`;
 
   return (
     <aside className="space-y-5 lg:sticky lg:top-24">

@@ -10,6 +10,7 @@ export default function LeftSidebar() {
   const [showAuth, setShowAuth] = useState(false);
   const [following, setFollowing] = useState([]);
   const [followingLoading, setFollowingLoading] = useState(false);
+  const [mySlug, setMySlug] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -33,6 +34,10 @@ export default function LeftSidebar() {
         if (!me?.id) {
           if (!cancelled) setFollowing([]);
           return;
+        }
+
+        if (!cancelled) {
+          setMySlug(me.username || me.user_slug || me.id);
         }
 
         const followingRes = await fetch(
@@ -76,7 +81,7 @@ export default function LeftSidebar() {
         {session?.user ? (
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-2">
             <Link
-              href="/profile"
+              href={mySlug ? `/${mySlug}` : "/"}
               className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm"
             >
               <span>Dashboard</span>
@@ -127,7 +132,7 @@ export default function LeftSidebar() {
                 {following.map((member) => (
                   <Link
                     key={member.id}
-                    href={`/profile/${member.username || member.user_slug || member.id}`}
+                    href={`/${member.username || member.user_slug || member.id}`}
                     className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
                     <div className="w-7 h-7 rounded-full bg-cyan-500 text-white flex items-center justify-center text-xs font-semibold overflow-hidden">

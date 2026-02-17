@@ -27,8 +27,23 @@ export default function SignUpPage() {
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  async function redirectToUserPage() {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) {
+        router.push("/");
+        return;
+      }
+      const user = await res.json();
+      const username = user?.username || user?.user_slug || user?.id;
+      router.push(username ? `/${username}` : "/");
+    } catch {
+      router.push("/");
+    }
+  }
+
   if (session) {
-    router.push("/profile");
+    redirectToUserPage();
     return null;
   }
 
@@ -86,7 +101,7 @@ export default function SignUpPage() {
           password: formData.password,
           redirect: false,
         }).then(() => {
-          router.push("/profile");
+          redirectToUserPage();
         });
       }, 1500);
     } catch (err) {
@@ -101,7 +116,7 @@ export default function SignUpPage() {
     setError("");
     try {
       // NextAuth will handle the redirect to Google OAuth
-      await signIn("google", { callbackUrl: "/profile" });
+      await signIn("google", { callbackUrl: "/" });
     } catch (err) {
       setError("Google sign up failed. Please try again.");
       setLoading(false);

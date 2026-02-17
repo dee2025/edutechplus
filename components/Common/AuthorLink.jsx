@@ -12,11 +12,11 @@ export default function AuthorLink({ user, className = "" }) {
 
   // Prefer username (new method), then user_slug, then ID
   const profilePath = username
-    ? `/profile/${username}`
+    ? `/${username}`
     : slug
-      ? `/profile/${slug}`
+      ? `/${slug}`
       : id
-        ? `/profile/${id}`
+        ? `/${id}`
         : null;
 
   if (!profilePath) {

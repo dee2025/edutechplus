@@ -268,7 +268,7 @@ export default function UserProfilePage() {
             <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
               <div className="grid grid-cols-3 gap-3">
                 <Link
-                  href={`/profile/${user.username || user.user_slug || user.id}/followers`}
+                  href={`/${user.username || user.user_slug || user.id}/followers`}
                   className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-center"
                 >
                   <p className="text-gray-600 dark:text-gray-400 text-xs">
@@ -280,7 +280,7 @@ export default function UserProfilePage() {
                 </Link>
 
                 <Link
-                  href={`/profile/${user.username || user.user_slug || user.id}/following`}
+                  href={`/${user.username || user.user_slug || user.id}/following`}
                   className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-center"
                 >
                   <p className="text-gray-600 dark:text-gray-400 text-xs">

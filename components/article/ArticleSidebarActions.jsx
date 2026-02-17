@@ -7,7 +7,9 @@ import { useEffect, useState } from "react";
 
 export default function ArticleSidebarActions({ article }) {
   const { data: session } = useSession();
-  const [likesCount, setLikesCount] = useState(Number(article?.likes_count || 0));
+  const [likesCount, setLikesCount] = useState(
+    Number(article?.likes_count || 0),
+  );
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -132,7 +134,11 @@ export default function ArticleSidebarActions({ article }) {
             onClick={handleShare}
             className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
           >
-            {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+            {copied ? (
+              <Check className="w-4 h-4" />
+            ) : (
+              <Share2 className="w-4 h-4" />
+            )}
             {copied ? "Link copied" : "Share"}
           </button>
         </div>

@@ -7,7 +7,9 @@ import { useEffect, useState } from "react";
 
 export default function ArticleTitleActions({ article }) {
   const { data: session } = useSession();
-  const [likesCount, setLikesCount] = useState(Number(article?.likes_count || 0));
+  const [likesCount, setLikesCount] = useState(
+    Number(article?.likes_count || 0),
+  );
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -88,7 +90,6 @@ export default function ArticleTitleActions({ article }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1800);
       }
-
     } catch (err) {
       if (err?.name !== "AbortError") {
         console.error("Failed to share article:", err);

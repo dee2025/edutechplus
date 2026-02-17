@@ -1,7 +1,7 @@
 import ArticleContent from "@/components/article/ArticleContent";
+import ArticleTitleActions from "@/components/article/ArticleTitleActions";
 import AuthorSidebar from "@/components/article/AuthorSidebar";
 import Comments from "@/components/article/Comments";
-import ArticleTitleActions from "@/components/article/ArticleTitleActions";
 import TrackViewClient from "@/components/article/TrackViewClient";
 import { extractFaqsFromContent } from "@/lib/extractFaqs";
 import { notFound } from "next/navigation";
@@ -107,7 +107,7 @@ export default async function ArticleByAuthorPage({ params }) {
     author: {
       "@type": "Person",
       name: article.author_name,
-      url: `${base}/profile/${article.author_username}`,
+      url: `${base}/${article.author_username}`,
     },
     publisher: {
       "@type": "Organization",

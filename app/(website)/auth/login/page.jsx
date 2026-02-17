@@ -15,8 +15,23 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  async function redirectToUserPage() {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) {
+        router.push("/");
+        return;
+      }
+      const user = await res.json();
+      const username = user?.username || user?.user_slug || user?.id;
+      router.push(username ? `/${username}` : "/");
+    } catch {
+      router.push("/");
+    }
+  }
+
   if (session) {
-    router.push("/profile");
+    redirectToUserPage();
     return null;
   }
 
@@ -35,7 +50,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error);
       } else if (result?.ok) {
-        router.push("/profile");
+        await redirectToUserPage();
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -49,7 +64,7 @@ export default function LoginPage() {
     setError("");
     try {
       // NextAuth will handle the redirect to Google OAuth
-      await signIn("google", { callbackUrl: "/profile" });
+      await signIn("google", { callbackUrl: "/" });
     } catch (err) {
       setError("Google sign in failed. Please try again.");
       setLoading(false);
