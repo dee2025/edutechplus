@@ -1,5 +1,5 @@
 import { Calendar, Clock } from "lucide-react";
-import AuthorLink from "../common/AuthorLink";
+import AuthorLink from "../Common/AuthorLink";
 import ViewsBadge from "./ViewsBadge";
 
 export default function ArticleHeader({ article, categories }) {

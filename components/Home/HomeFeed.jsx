@@ -5,7 +5,7 @@ import { Check, Heart, MessageCircle, Share2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import AuthorLink from "../common/AuthorLink";
+import AuthorLink from "../Common/AuthorLink";
 
 export default function HomeFeed({ filter = "latest" }) {
   const { data: session, status } = useSession();

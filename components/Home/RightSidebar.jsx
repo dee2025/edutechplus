@@ -3,7 +3,7 @@
 import { BarChart3, TrendingUp, Zap } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import AuthorLink from "../common/AuthorLink";
+import AuthorLink from "../Common/AuthorLink";
 
 export default function RightSidebar() {
   const [trendingTags, setTrendingTags] = useState([]);

@@ -3,7 +3,7 @@
 import { Clock } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import AuthorLink from "../common/AuthorLink";
+import AuthorLink from "../Common/AuthorLink";
 
 export default function RecentlyPublished() {
   const [articles, setArticles] = useState([]);

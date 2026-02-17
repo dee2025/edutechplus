@@ -1,6 +1,6 @@
 "use client";
 
-import AuthorLink from "@/components/common/AuthorLink";
+import AuthorLink from \"@/components/Common/AuthorLink\";
 import AuthModal from "@/components/UserAuth/AuthModal";
 import {
   ArrowLeft,
