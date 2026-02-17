@@ -1,5 +1,5 @@
-import { verifyToken } from "@/lib/auth";
 import pool from "@/lib/db";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
@@ -35,12 +35,23 @@ export async function GET(req, { params }) {
 
 export async function POST(req, { params }) {
   try {
-    const token = req.cookies.get("auth_token")?.value;
-    if (!token)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const session = await getServerSession();
 
-    const payload = await verifyToken(token);
-    const userId = payload.id;
+    if (!session?.user?.email) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get user ID from email
+    const [[user]] = await pool.execute(
+      "SELECT id FROM users WHERE email = ?",
+      [session.user.email],
+    );
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    const userId = user.id;
 
     const param = await params;
     const slug = param.slug;

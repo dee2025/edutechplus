@@ -1,9 +1,10 @@
 "use client";
 
+import TagInput from "@/components/article/TagInput";
+import { Upload, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
@@ -29,6 +30,7 @@ export default function PublishArticlePage() {
     featured_image: "",
     seo_title: "",
     seo_description: "",
+    tags: [],
   });
 
   useEffect(() => {
@@ -91,8 +93,28 @@ export default function PublishArticlePage() {
       return;
     }
 
+    if (form.title.trim().length > 255) {
+      toast.error("Title must be 255 characters or less");
+      return;
+    }
+
     if (!form.content.trim()) {
       toast.error("Article content is required");
+      return;
+    }
+
+    if (form.subtitle && form.subtitle.trim().length > 255) {
+      toast.error("Subtitle must be 255 characters or less");
+      return;
+    }
+
+    if (form.seo_title && form.seo_title.trim().length > 255) {
+      toast.error("SEO title must be 255 characters or less");
+      return;
+    }
+
+    if (form.seo_description && form.seo_description.trim().length > 320) {
+      toast.error("SEO description must be 320 characters or less");
       return;
     }
 
@@ -155,8 +177,12 @@ export default function PublishArticlePage() {
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             placeholder="Enter article title"
+            maxLength={255}
             className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
           />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
+            {form.title.length}/255
+          </p>
         </div>
 
         {/* Subtitle */}
@@ -169,8 +195,12 @@ export default function PublishArticlePage() {
             value={form.subtitle}
             onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
             placeholder="Optional subtitle"
+            maxLength={255}
             className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
           />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
+            {form.subtitle.length}/255
+          </p>
         </div>
 
         {/* Excerpt */}
@@ -255,6 +285,21 @@ export default function PublishArticlePage() {
           </div>
         </div>
 
+        {/* Tags */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            Tags (up to 5)
+          </label>
+          <TagInput
+            value={form.tags}
+            onChange={(tags) => setForm({ ...form, tags })}
+            max={5}
+          />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Add relevant tags to help readers discover your article
+          </p>
+        </div>
+
         {/* SEO */}
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-3">
@@ -272,22 +317,31 @@ export default function PublishArticlePage() {
                   setForm({ ...form, seo_title: e.target.value })
                 }
                 placeholder="Leave empty to use article title"
+                maxLength={255}
                 className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded text-sm text-blue-900 dark:text-blue-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
+              <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 text-right">
+                {form.seo_title.length}/255
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">
                 SEO Description
               </label>
-              <input
-                type="text"
+              <textarea
                 value={form.seo_description}
                 onChange={(e) =>
                   setForm({ ...form, seo_description: e.target.value })
                 }
-                placeholder="Leave empty to use article excerpt"
-                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded text-sm text-blue-900 dark:text-blue-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="Leave empty to use article excerpt (recommended: 150-160 chars)"
+                maxLength={320}
+                rows={3}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded text-sm text-blue-900 dark:text-blue-200 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
               />
+              <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 text-right">
+                {form.seo_description.length}/320{" "}
+                {form.seo_description.length > 160 && "(optimal: 150-160)"}
+              </p>
             </div>
           </div>
         </div>

@@ -21,7 +21,10 @@ async function runMigration() {
 
   try {
     console.log("📁 Reading migration file...");
-    const migrationPath = path.join(__dirname, "../db/migrations/2026-02-14-add-user-slug.sql");
+    const migrationPath = path.join(
+      __dirname,
+      "../db/migrations/2026-02-14-add-user-slug.sql",
+    );
     const sqlContent = fs.readFileSync(migrationPath, "utf8");
 
     console.log("SQL Content loaded:", sqlContent.length, "bytes");
@@ -36,7 +39,7 @@ async function runMigration() {
 
     for (const line of allLines) {
       const trimmed = line.trim();
-      
+
       // Skip empty lines and comments
       if (!trimmed || trimmed.startsWith("--")) continue;
 
@@ -55,11 +58,18 @@ async function runMigration() {
       if (!stmt) continue;
 
       try {
-        console.log(`⏳ Executing statement ${i + 1}: ${stmt.substring(0, 60)}...`);
+        console.log(
+          `⏳ Executing statement ${i + 1}: ${stmt.substring(0, 60)}...`,
+        );
         await conn.execute(stmt);
         console.log("  ✓ Success");
       } catch (err) {
-        if (err.code === "ER_DUP_ENTRY" || err.code === "ER_BAD_FIELD_ERROR" || err.code === "ER_DUP_KEYNAME" || err.code === "ER_CANT_DROP_FIELD_OR_KEY") {
+        if (
+          err.code === "ER_DUP_ENTRY" ||
+          err.code === "ER_BAD_FIELD_ERROR" ||
+          err.code === "ER_DUP_KEYNAME" ||
+          err.code === "ER_CANT_DROP_FIELD_OR_KEY"
+        ) {
           console.log("  ✓ Already exists (skipped)");
         } else {
           console.error("  ✗ Error:", err.message);
@@ -83,14 +93,16 @@ async function runMigration() {
 
     // Verify user_slug index
     const indexCheck = await conn.execute(
-      "SELECT COUNT(*) as count FROM users WHERE user_slug IS NOT NULL"
+      "SELECT COUNT(*) as count FROM users WHERE user_slug IS NOT NULL",
     );
 
     console.log("\n✅ User slug system migration completed successfully!");
     console.log("\n📋 Migration Summary:");
     console.log(`  ✓ Added user_slug column to users table`);
     console.log(`  ✓ Created index for user_slug`);
-    console.log(`  ✓ Generated slugs for users (${indexCheck[0][0].count} users updated)`);
+    console.log(
+      `  ✓ Generated slugs for users (${indexCheck[0][0].count} users updated)`,
+    );
 
     await conn.end();
     process.exit(0);

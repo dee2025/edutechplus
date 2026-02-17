@@ -22,8 +22,8 @@ export default async function ArticleRedirectPage({ params }) {
   if (!data || !data.article) return notFound();
 
   const article = data.article;
-  if (!article.category_slug) return notFound();
-  const target = `/${article.category_slug}/${article.slug}`;
 
+  // Redirect to username-based URL (primary route)
+  const target = `/${article.author_username || article.author_slug}/${article.slug}`;
   permanentRedirect(target);
 }

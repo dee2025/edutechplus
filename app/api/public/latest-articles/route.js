@@ -11,7 +11,7 @@ export async function GET(req) {
 
     const offset = (page - 1) * limit;
 
-    let whereClause = `WHERE a.status = 'published'`;
+    let whereClause = `WHERE a.status = 'published' AND a.created_by_role = 'user'`;
     let params = [];
 
     // category filter
@@ -35,18 +35,20 @@ export async function GET(req) {
     const [articles] = await pool.execute(
       `
             SELECT
-                a.id,
-                a.title,
-                a.slug,
-                a.excerpt,
-                a.featured_image,
-                a.read_time,
-                a.published_at,
-                ad.name AS author_name,
-                c.name AS category_name,
-                c.slug AS category_slug
+              a.id,
+              a.title,
+              a.slug,
+              a.excerpt,
+              a.featured_image,
+              a.read_time,
+              a.published_at,
+              u.name AS author_name,
+              IFNULL(u.username, u.user_slug) AS author_username,
+              u.user_slug AS author_slug,
+              c.name AS category_name,
+              c.slug AS category_slug
             FROM articles a
-            JOIN admins ad ON ad.id = a.author_id
+            LEFT JOIN users u ON u.id = a.author_id
             LEFT JOIN categories c ON c.id = a.category_id
             ${whereClause}
             ORDER BY a.published_at DESC

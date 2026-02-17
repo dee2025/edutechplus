@@ -1,10 +1,13 @@
 import { Eye, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
-export default function ArticleSidebar({ trending }) {
-  const getArticleUrl = (item) => `/${item.category_slug}/${item.slug}`;
+export default function ArticleSidebar({ trending, authorUsername }) {
+  // Use username-based URL for trending articles (primary route) with category fallback
+  const getArticleUrl = (item) => {
+    return `/${item.username || item.author_slug || item.author_id}/${item.slug}`;
+  };
   return (
-    <div className="sticky top-24 space-y-5">
+    <div className="sticky top-26 space-y-5">
       {/* Trending */}
       <div className="bg-white dark:bg-gray-900 rounded-lg p-5 border border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-800">

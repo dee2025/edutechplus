@@ -1,6 +1,9 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 
+const normalizeSlug = (slug) =>
+  (slug || "").replace(/^\/?(articles|article)\//, "");
+
 const DEFAULT_LAYOUT = {
   sections: {
     hero_main: { items: [] },
@@ -41,23 +44,35 @@ async function fetchArticlesByIds(ids) {
             a.slug,
             a.excerpt,
             a.featured_image,
+            u.name as author_name,
+            IFNULL(u.username, u.user_slug) as author_username,
+            u.user_slug as author_slug,
           MIN(c.name) AS category_name,
           MIN(c.slug) AS category_slug
         FROM articles a
+        LEFT JOIN users u ON u.id = a.author_id
         LEFT JOIN article_categories ac ON ac.article_id = a.id
         LEFT JOIN categories c ON c.id = COALESCE(ac.category_id, a.category_id)
-        WHERE a.status = 'published' AND a.id IN (${placeholders})
+        WHERE a.status = 'published' AND a.created_by_role = 'user' AND a.id IN (${placeholders})
         GROUP BY a.id
         ORDER BY FIELD(a.id, ${placeholders})
     `,
     [...ids, ...ids],
   );
-  return rows;
+  return rows.map((row) => ({
+    ...row,
+    slug: normalizeSlug(row.slug),
+  }));
 }
 
 export async function GET() {
   const layout = await getHomepageLayout();
   const ids = (layout.sections?.featured?.items || []).filter(Boolean);
   const rows = await fetchArticlesByIds(ids);
-  return NextResponse.json(rows[0] || null);
+  const article = rows[0] || null;
+  if (!article) return NextResponse.json(null);
+  return NextResponse.json({
+    ...article,
+    slug: normalizeSlug(article.slug),
+  });
 }

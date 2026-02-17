@@ -1,4 +1,5 @@
 import { Calendar, Clock } from "lucide-react";
+import AuthorLink from "../common/AuthorLink";
 import ViewsBadge from "./ViewsBadge";
 
 export default function ArticleHeader({ article, categories }) {
@@ -13,22 +14,28 @@ export default function ArticleHeader({ article, categories }) {
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-100 leading-tight text-center mb-4">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 leading-tight text-center mb-4 px-2">
           {article.title}
         </h1>
 
         {/* Excerpt */}
         {article.excerpt && (
-          <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 text-center max-w-2xl mx-auto mb-5 leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 text-center max-w-2xl mx-auto mb-5 leading-relaxed px-4">
             {article.excerpt}
           </p>
         )}
 
         {/* Meta Information */}
-        <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600 dark:text-gray-400">
-          <span className="font-medium text-gray-900 dark:text-gray-100">
-            {article.author_name}
-          </span>
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs text-gray-600 dark:text-gray-400 px-2">
+          <AuthorLink
+            user={{
+              name: article.author_name,
+              username: article.author_username,
+              slug: article.author_slug,
+              id: article.author_id,
+            }}
+            className="!text-gray-900 !dark:text-gray-100"
+          />
 
           <span className="text-gray-400 dark:text-gray-600">•</span>
 

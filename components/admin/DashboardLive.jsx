@@ -171,7 +171,7 @@ export default function DashboardLive() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <Link
-                      href={`/${article.category_slug}/${article.slug}`}
+                      href={`/${article.author_username || article.category_slug}/${article.slug}`}
                       className="text-sm font-medium text-gray-100 hover:text-cyan-300 transition-colors truncate"
                     >
                       {article.title}

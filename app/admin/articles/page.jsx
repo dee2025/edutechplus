@@ -1,13 +1,9 @@
 "use client";
 
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   const fetchArticles = async () => {
     const res = await fetch("/api/admin/articles");
@@ -19,50 +15,6 @@ export default function ArticlesPage() {
     fetchArticles();
   }, []);
 
-  const handleDelete = async (article) => {
-    toast((t) => (
-      <div className="space-y-3">
-        <p className="text-sm">
-          Delete <b>{article.title}</b>? This action cannot be undone.
-        </p>
-
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="px-3 py-1 text-sm bg-gray-700 rounded"
-          >
-            Cancel
-          </button>
-
-          <button
-            onClick={async () => {
-              toast.dismiss(t.id);
-              setLoading(true);
-
-              const res = await fetch(`/api/admin/articles/${article.id}`, {
-                method: "DELETE",
-              });
-
-              setLoading(false);
-
-              if (!res.ok) {
-                toast.error("Failed to delete article");
-                return;
-              }
-
-              setArticles((prev) => prev.filter((a) => a.id !== article.id));
-
-              toast.success("Article deleted");
-            }}
-            className="px-3 py-1 text-sm bg-red-500 text-black rounded"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    ));
-  };
-
   return (
     <div className="space-y-8">
       {/* HEADER */}
@@ -70,17 +22,9 @@ export default function ArticlesPage() {
         <div>
           <h1 className="text-3xl font-bold text-white">Articles</h1>
           <p className="text-gray-400 mt-1 text-sm">
-            Create and manage your articles
+            View all articles created by users
           </p>
         </div>
-
-        <Link
-          href="/admin/articles/create"
-          className="flex items-center gap-2 px-4 py-2 bg-cyan-400 text-black rounded-lg font-semibold hover:bg-cyan-300 transition"
-        >
-          <Plus size={18} />
-          New Article
-        </Link>
       </div>
 
       {/* TABLE */}
@@ -99,9 +43,9 @@ export default function ArticlesPage() {
                   Slug
                 </th>
                 <th className="px-6 py-4 text-left font-semibold text-gray-300">
-                  Category
+                  Tags
                 </th>
-                <th className="px-6 py-4 text-center font-semibold text-gray-300">
+                <th className="px-6 py-4 text-left font-semibold text-gray-300">
                   Status
                 </th>
                 <th className="px-6 py-4 text-left font-semibold text-gray-300">
@@ -109,9 +53,6 @@ export default function ArticlesPage() {
                 </th>
                 <th className="px-6 py-4 text-left font-semibold text-gray-300">
                   Date
-                </th>
-                <th className="px-6 py-4 text-right font-semibold text-gray-300">
-                  Actions
                 </th>
               </tr>
             </thead>
@@ -162,18 +103,27 @@ export default function ArticlesPage() {
                     </span>
                   </td>
 
-                  {/* CATEGORY */}
+                  {/* TAGS */}
                   <td className="px-6 py-4">
-                    {a.categories && a.categories.length > 0 ? (
+                    {a.tags && a.tags.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
-                        {a.categories.map((cat) => (
+                        {a.tags.slice(0, 3).map((tag) => (
                           <span
-                            key={cat.id}
-                            className="inline-block px-2.5 py-1 text-xs font-medium bg-purple-900/40 text-purple-300 rounded"
+                            key={tag.id}
+                            className="inline-block px-2.5 py-1 text-xs font-medium rounded"
+                            style={{
+                              backgroundColor: `${tag.color || "#06B6D4"}20`,
+                              color: tag.color || "#06B6D4",
+                            }}
                           >
-                            {cat.name}
+                            {tag.name}
                           </span>
                         ))}
+                        {a.tags.length > 3 && (
+                          <span className="inline-block px-2.5 py-1 text-xs font-medium bg-gray-700 text-gray-400 rounded">
+                            +{a.tags.length - 3}
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <span className="text-gray-500">-</span>
@@ -208,41 +158,13 @@ export default function ArticlesPage() {
                       day: "numeric",
                     })}
                   </td>
-
-                  {/* ACTIONS */}
-                  <td className="px-6 py-4">
-                    <div className="flex justify-end gap-3">
-                      <Link
-                        href={`/admin/articles/edit/${a.id}`}
-                        className="text-cyan-400 hover:text-cyan-300 transition"
-                        title="Edit"
-                      >
-                        <Pencil size={18} />
-                      </Link>
-
-                      <button
-                        onClick={() => handleDelete(a)}
-                        disabled={loading}
-                        className="text-red-400 hover:text-red-300 transition disabled:opacity-50"
-                        title="Delete"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
                 </tr>
               ))}
 
               {!articles.length && (
                 <tr>
-                  <td colSpan={8} className="text-center py-12 text-gray-500">
+                  <td colSpan={6} className="text-center py-12 text-gray-500">
                     <p>No articles found</p>
-                    <Link
-                      href="/admin/articles/create"
-                      className="text-cyan-400 hover:text-cyan-300 text-sm font-medium mt-2 inline-block"
-                    >
-                      Create your first article →
-                    </Link>
                   </td>
                 </tr>
               )}

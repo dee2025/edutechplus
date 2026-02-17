@@ -2,10 +2,16 @@ import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
+const normalizeSlug = (slug) =>
+  (slug || "").replace(/^\/?(articles|article)\//, "");
+
 export async function GET(req) {
   try {
     const session = await getServerSession();
-    const limit = Math.min(parseInt(req.nextUrl.searchParams.get("limit")) || 20, 100);
+    const limit = Math.min(
+      parseInt(req.nextUrl.searchParams.get("limit")) || 20,
+      100,
+    );
 
     let articles = [];
 
@@ -32,7 +38,7 @@ export async function GET(req) {
         });
 
         if (userInterests.length > 0) {
-          const categoryIds = userInterests.map(i => i.category_id);
+          const categoryIds = userInterests.map((i) => i.category_id);
           const placeholders = categoryIds.map(() => "?").join(",");
 
           // Get articles from interested categories with views
@@ -40,7 +46,7 @@ export async function GET(req) {
             query: `
               SELECT 
                 a.id, a.title, a.slug, a.excerpt, a.featured_image,
-                a.author_id, u.name as author_name,
+                a.author_id, u.name as author_name, IFNULL(u.username, u.user_slug) as author_username, u.user_slug as author_slug,
                 c.id as category_id, c.name as category_name, c.slug as category_slug,
                 COUNT(av.id) as views,
                 a.published_at, a.created_at
@@ -68,7 +74,7 @@ export async function GET(req) {
         query: `
           SELECT 
             a.id, a.title, a.slug, a.excerpt, a.featured_image,
-            a.author_id, u.name as author_name,
+            a.author_id, u.name as author_name, IFNULL(u.username, u.user_slug) as author_username, u.user_slug as author_slug,
             c.id as category_id, c.name as category_name, c.slug as category_slug,
             COUNT(av.id) as views,
             a.published_at, a.created_at
@@ -93,21 +99,22 @@ export async function GET(req) {
         articleMap.set(article.id, {
           id: article.id,
           title: article.title,
-          slug: article.slug,
+          slug: normalizeSlug(article.slug),
           excerpt: article.excerpt,
           featured_image: article.featured_image,
           author_id: article.author_id,
           author_name: article.author_name,
+          author_slug: article.author_slug,
           views: article.views || 0,
           published_at: article.published_at,
           created_at: article.created_at,
           categories: [],
         });
       }
-      
+
       if (article.category_id) {
         const existing = articleMap.get(article.id);
-        if (!existing.categories.find(c => c.id === article.category_id)) {
+        if (!existing.categories.find((c) => c.id === article.category_id)) {
           existing.categories.push({
             id: article.category_id,
             name: article.category_name,
@@ -125,7 +132,7 @@ export async function GET(req) {
     console.error("Error fetching recommendations:", err);
     return NextResponse.json(
       { message: "Failed to fetch recommendations", articles: [] },
-      { status: 200 } // Return 200 even on error to not break frontend
+      { status: 200 }, // Return 200 even on error to not break frontend
     );
   }
 }

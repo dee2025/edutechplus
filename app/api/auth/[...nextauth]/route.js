@@ -4,6 +4,36 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
+// Helper function to generate unique username from name
+async function generateUniqueUsername(name) {
+  const baseUsername = name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/[^a-z0-9-]/g, "") // Remove special characters
+    .substring(0, 20); // Limit to 20 characters
+
+  let username = baseUsername;
+  let counter = 1;
+
+  // Ensure username is unique
+  while (true) {
+    const existingUsername = await query({
+      query: "SELECT id FROM users WHERE username = ?",
+      values: [username],
+    });
+
+    if (existingUsername.length === 0) {
+      break; // Username is unique
+    }
+
+    username = `${baseUsername}-${counter}`;
+    counter++;
+  }
+
+  return username;
+}
+
 const handler = NextAuth({
   providers: [
     GoogleProvider({
@@ -71,12 +101,16 @@ const handler = NextAuth({
 
           if (existingUsers.length === 0) {
             // Create new user from Google profile (NULL password for OAuth users)
+            const username = await generateUniqueUsername(
+              user.name || profile?.name || "User",
+            );
             const result = await query({
               query:
-                "INSERT INTO users (name, email, password, avatar_url, provider, provider_id, email_verified, is_active) VALUES (?, ?, NULL, ?, ?, ?, NOW(), 1)",
+                "INSERT INTO users (name, email, password, username, avatar_url, provider, provider_id, email_verified, is_active) VALUES (?, ?, NULL, ?, ?, ?, ?, NOW(), 1)",
               values: [
                 user.name || profile?.name || "User",
                 user.email,
+                username,
                 user.image || null,
                 "google",
                 profile?.sub || account?.providerAccountId,

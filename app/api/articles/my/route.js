@@ -7,10 +7,7 @@ export async function GET(req) {
     const session = await getServerSession();
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     // Get user ID
@@ -25,15 +22,17 @@ export async function GET(req) {
 
     const userId = users[0].id;
 
-    // Get user's articles
+    // Get user's articles with username
     const articles = await query({
       query: `
         SELECT 
           a.id, a.title, a.slug, a.excerpt, a.featured_image,
           a.status, a.published_at, a.created_at, 
-          COUNT(av.id) as views
+          COUNT(av.id) as views,
+          u.username, u.user_slug
         FROM articles a
         LEFT JOIN article_views av ON av.article_id = a.id
+        LEFT JOIN users u ON u.id = a.author_id
         WHERE a.author_id = ?
         GROUP BY a.id
         ORDER BY a.created_at DESC
@@ -54,18 +53,18 @@ export async function GET(req) {
           values: [article.id],
         });
         return { ...article, categories };
-      })
+      }),
     );
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       articles: articlesWithCategories,
-      total: articlesWithCategories.length 
+      total: articlesWithCategories.length,
     });
   } catch (err) {
     console.error("Error fetching user articles:", err);
     return NextResponse.json(
       { message: "Failed to fetch articles" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

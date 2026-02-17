@@ -48,7 +48,7 @@ export default function TopContributors() {
         {stats.top_authors.map((author, index) => (
           <Link
             key={author.id}
-            href={`/profile/${author.user_slug || author.id}`}
+            href={`/profile/${author.username || author.user_slug || author.id}`}
             className="group flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-gray-800 hover:bg-cyan-50 dark:hover:bg-gray-700 transition-all border border-transparent hover:border-cyan-300 dark:hover:border-cyan-600 shadow-sm hover:shadow-md"
           >
             {/* Medal Badge */}
@@ -76,7 +76,8 @@ export default function TopContributors() {
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
                 <span className="inline-block w-2 h-2 bg-cyan-500 rounded-full"></span>
-                {author.article_count} article{author.article_count !== 1 ? "s" : ""}
+                {author.article_count} article
+                {author.article_count !== 1 ? "s" : ""}
               </p>
             </div>
 

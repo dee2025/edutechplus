@@ -9,7 +9,7 @@ export async function POST(req) {
     if (!session?.user?.email) {
       return NextResponse.json(
         { message: "Unauthorized - Please login first" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -20,7 +20,7 @@ export async function POST(req) {
     if (!file) {
       return NextResponse.json(
         { message: "No file provided" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -28,7 +28,7 @@ export async function POST(req) {
     if (!file.type.startsWith("image/")) {
       return NextResponse.json(
         { message: "Only image files are allowed" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -36,7 +36,7 @@ export async function POST(req) {
     if (file.size > 5 * 1024 * 1024) {
       return NextResponse.json(
         { message: "File size must be less than 5MB" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -56,7 +56,7 @@ export async function POST(req) {
           (error, result) => {
             if (error) reject(error);
             resolve(result);
-          }
+          },
         )
         .end(buffer);
     });
@@ -70,7 +70,7 @@ export async function POST(req) {
     console.error("Upload Error:", error);
     return NextResponse.json(
       { message: "Upload failed - " + (error.message || "unknown error") },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

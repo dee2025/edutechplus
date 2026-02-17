@@ -16,7 +16,7 @@ function escapeXml(value) {
 export async function GET() {
   try {
     const articles = await query(
-      "SELECT a.title, a.slug, a.excerpt, a.published_at, a.updated_at, MIN(c.slug) AS category_slug FROM articles a LEFT JOIN article_categories ac ON ac.article_id = a.id LEFT JOIN categories c ON c.id = COALESCE(ac.category_id, a.category_id) WHERE a.status = 'published' GROUP BY a.id ORDER BY a.published_at DESC LIMIT 50",
+      "SELECT a.title, a.slug, a.excerpt, a.published_at, a.updated_at, MIN(c.slug) AS category_slug FROM articles a LEFT JOIN article_categories ac ON ac.article_id = a.id LEFT JOIN categories c ON c.id = COALESCE(ac.category_id, a.category_id) WHERE a.status = 'published' AND a.created_by_role = 'user' GROUP BY a.id ORDER BY a.published_at DESC LIMIT 50",
     );
 
     const now = new Date().toUTCString();

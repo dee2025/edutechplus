@@ -1,6 +1,39 @@
 import { query } from "@/lib/db";
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+
+async function resolveUserId(slug) {
+  // Try by numeric ID first
+  if (!isNaN(slug)) {
+    const result = await query({
+      query: "SELECT id FROM users WHERE id = ?",
+      values: [parseInt(slug)],
+    });
+    if (result.length > 0) {
+      return result[0].id;
+    }
+  }
+
+  // Try by username
+  let result = await query({
+    query: "SELECT id FROM users WHERE username = ?",
+    values: [slug],
+  });
+  if (result.length > 0) {
+    return result[0].id;
+  }
+
+  // Try by user_slug
+  result = await query({
+    query: "SELECT id FROM users WHERE user_slug = ?",
+    values: [slug],
+  });
+  if (result.length > 0) {
+    return result[0].id;
+  }
+
+  return null;
+}
 
 export async function POST(req, { params }) {
   try {
@@ -9,11 +42,11 @@ export async function POST(req, { params }) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { slug } = params;
-    const followingId = parseInt(slug); // Expecting numeric ID
+    const { slug } = await params;
+    const followingId = await resolveUserId(slug);
 
-    if (isNaN(followingId)) {
-      return NextResponse.json({ message: "Invalid user ID" }, { status: 400 });
+    if (!followingId) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     // Get current user ID
@@ -32,20 +65,7 @@ export async function POST(req, { params }) {
     if (followerId === followingId) {
       return NextResponse.json(
         { message: "Cannot follow yourself" },
-        { status: 400 }
-      );
-    }
-
-    // Check if target user exists
-    const targetUser = await query({
-      query: "SELECT id FROM users WHERE id = ?",
-      values: [followingId],
-    });
-
-    if (!targetUser[0]) {
-      return NextResponse.json(
-        { message: "Target user not found" },
-        { status: 404 }
+        { status: 400 },
       );
     }
 
@@ -64,7 +84,7 @@ export async function POST(req, { params }) {
     console.error("Error following user:", err);
     return NextResponse.json(
       { message: "Failed to follow user" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -76,11 +96,11 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { slug } = params;
-    const followingId = parseInt(slug); // Expecting numeric ID
+    const { slug } = await params;
+    const followingId = await resolveUserId(slug);
 
-    if (isNaN(followingId)) {
-      return NextResponse.json({ message: "Invalid user ID" }, { status: 400 });
+    if (!followingId) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     // Get current user ID
@@ -97,7 +117,8 @@ export async function DELETE(req, { params }) {
 
     // Delete follow relationship
     await query({
-      query: "DELETE FROM user_follows WHERE follower_id = ? AND following_id = ?",
+      query:
+        "DELETE FROM user_follows WHERE follower_id = ? AND following_id = ?",
       values: [followerId, followingId],
     });
 
@@ -106,7 +127,7 @@ export async function DELETE(req, { params }) {
     console.error("Error unfollowing user:", err);
     return NextResponse.json(
       { message: "Failed to unfollow user" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

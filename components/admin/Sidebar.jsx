@@ -5,7 +5,6 @@ import {
   Bell,
   Eye,
   FileText,
-  Folder,
   Home,
   LayoutDashboard,
   LogOut,
@@ -29,8 +28,8 @@ const menuSections = [
   {
     label: "Content",
     items: [
-      { name: "Articles", path: "/admin/articles", icon: FileText },
-      { name: "Categories", path: "/admin/categories", icon: Folder },
+      { name: "Articles (View)", path: "/admin/articles", icon: FileText },
+      { name: "Tags", path: "/admin/tags", icon: FileText },
       { name: "Homepage", path: "/admin/homepage", icon: Home },
     ],
   },

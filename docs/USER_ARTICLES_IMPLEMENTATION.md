@@ -15,6 +15,7 @@ Complete implementation of user article publishing with personalized AI-driven r
 ## ✨ Features
 
 ### For Users
+
 - ✅ **Publish Articles Directly** - No approval needed, goes live immediately
 - ✅ **Rich Text Editor** - Full Tiptap editor with formatting options
 - ✅ **Category Selection** - Assign articles to multiple categories
@@ -25,11 +26,13 @@ Complete implementation of user article publishing with personalized AI-driven r
 - ✅ **Auto-Recommendations** - System tracks your interests automatically
 
 ### For Admins
+
 - ✅ **Unpublish Articles** - Remove any user article anytime
 - ✅ **Status Management** - published, unpublished, draft statuses
 - ✅ **Monitor All Content** - See user and admin articles together
 
 ### For Readers
+
 - ✅ **Personalized Feed** - Articles curated to your interests
 - ✅ **Interest Tracking** - System learns from your reading habits
 - ✅ **Trending Articles** - Popular content recommendations
@@ -42,6 +45,7 @@ Complete implementation of user article publishing with personalized AI-driven r
 ### New Tables
 
 #### `user_interests`
+
 ```sql
 CREATE TABLE user_interests (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -58,6 +62,7 @@ CREATE TABLE user_interests (
 ```
 
 #### `user_preferences`
+
 ```sql
 CREATE TABLE user_preferences (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -73,6 +78,7 @@ CREATE TABLE user_preferences (
 ### Updated Tables
 
 #### `articles` - Added columns
+
 ```sql
 ALTER TABLE articles ADD COLUMN author_id INT DEFAULT NULL COMMENT 'User who published article';
 ALTER TABLE articles ADD COLUMN status VARCHAR(20) DEFAULT 'published';
@@ -89,9 +95,12 @@ CREATE INDEX idx_articles_status ON articles(status);
 ### User Article Management
 
 #### `POST /api/articles/create`
+
 **Create and publish a new article**
+
 - **Auth**: Required (NextAuth session)
 - **Request**:
+
 ```json
 {
   "title": "Article Title",
@@ -104,14 +113,18 @@ CREATE INDEX idx_articles_status ON articles(status);
   "seo_description": "Custom SEO description"
 }
 ```
+
 - **Response**: `{ message, article_id, slug }`
 - **Status**: 201 on success, 400/401/500 on error
 
 #### `GET /api/articles/my`
+
 **Get user's published articles**
+
 - **Auth**: Required
 - **Query Parameters**: None
 - **Response**:
+
 ```json
 {
   "articles": [
@@ -134,7 +147,9 @@ CREATE INDEX idx_articles_status ON articles(status);
 ### Admin Article Management
 
 #### `POST /api/articles/[articleId]/publish-status`
+
 **Toggle article publish status**
+
 - **Auth**: Required (Admin only)
 - **Request**: `{ "status": "published" | "unpublished" | "draft" }`
 - **Response**: `{ message, article_id, status }`
@@ -143,10 +158,13 @@ CREATE INDEX idx_articles_status ON articles(status);
 ### Content Recommendations
 
 #### `GET /api/articles/recommendations`
+
 **Get personalized article feed**
+
 - **Auth**: Optional (better results if logged in)
 - **Query**: `?limit=20` (default 20, max 100)
 - **Response**:
+
 ```json
 {
   "articles": [
@@ -159,9 +177,7 @@ CREATE INDEX idx_articles_status ON articles(status);
       "author_name": "John Doe",
       "views": 150,
       "published_at": "2026-02-14T10:00:00Z",
-      "categories": [
-        { "id": 1, "name": "AI", "slug": "ai" }
-      ]
+      "categories": [{ "id": 1, "name": "AI", "slug": "ai" }]
     }
   ],
   "total": 1
@@ -181,7 +197,9 @@ CREATE INDEX idx_articles_status ON articles(status);
 ### Pages
 
 #### `/publish`
+
 **Article publishing page**
+
 - Rich text editor with Tiptap
 - Category multi-select
 - Featured image preview
@@ -190,6 +208,7 @@ CREATE INDEX idx_articles_status ON articles(status);
 - Auto-save drafts (future feature)
 
 #### `/profile` (Extended)
+
 - New "My Articles" tab
 - List of published articles
 - View counts per article
@@ -198,6 +217,7 @@ CREATE INDEX idx_articles_status ON articles(status);
 ### Components
 
 #### `PublishArticlePage` (app/(website)/publish/page.jsx)
+
 - Complete article creation form
 - Real-time validation
 - Category selection
@@ -205,12 +225,14 @@ CREATE INDEX idx_articles_status ON articles(status);
 - SEO optimization section
 
 #### `MyArticles` (components/profile/MyArticles.jsx)
+
 - Displays user's articles in profile
 - Shows view counts
 - Links to articles
 - "Publish New Article" button
 
 #### `PersonalizedFeed` (components/home/PersonalizedFeed.jsx)
+
 - Grid layout (1, 2, or 3 columns)
 - Article cards with images
 - Category badges
@@ -223,22 +245,26 @@ CREATE INDEX idx_articles_status ON articles(status);
 ## 🔐 Security & Safety
 
 ### Authentication
+
 - ✅ All endpoints require NextAuth session verification
 - ✅ Server-side user ID validation
 - ✅ Admin-only unpublish endpoint
 
 ### Input Validation
+
 - ✅ Required fields checked server-side
 - ✅ Slug uniqueness validation
 - ✅ Content sanitization via DOMPurify
 - ✅ URL validation for featured images
 
 ### Data Protection
+
 - ✅ Foreign key constraints prevent orphaned records
 - ✅ Cascade deletes clean up articles
 - ✅ Author_id prevents impersonation
 
 ### Content Moderation
+
 - ✅ Admin can unpublish anytime
 - ✅ Status field tracks article lifecycle
 - ✅ Articles hidden if unpublished
@@ -265,6 +291,7 @@ CREATE INDEX idx_articles_status ON articles(status);
    - Fallback to trending articles if no interests
 
 ### Example Flow
+
 ```
 1. User reads "AI Article" (Category: AI)
    → user_interests.AI_interest_score = 1.0
@@ -285,6 +312,7 @@ CREATE INDEX idx_articles_status ON articles(status);
 ## 🚀 Deployment Checklist
 
 ### Pre-Deployment
+
 - [x] Database migrations run successfully
 - [x] API endpoints tested
 - [x] Components render correctly
@@ -292,12 +320,14 @@ CREATE INDEX idx_articles_status ON articles(status);
 - [x] Mobile responsive checked
 
 ### Deployment Steps
+
 1. Push to main branch
 2. Vercel auto-deploys
 3. Database migrations auto-run via server actions
 4. Verify on production
 
 ### Post-Deployment
+
 1. Test publishing an article
 2. Verify it appears in feed
 3. Check admin can unpublish
@@ -308,6 +338,7 @@ CREATE INDEX idx_articles_status ON articles(status);
 ## 🧪 Testing Guide
 
 ### Test Publishing Flow
+
 ```
 1. Log in as user
 2. Navigate to /publish
@@ -318,6 +349,7 @@ CREATE INDEX idx_articles_status ON articles(status);
 ```
 
 ### Test Recommendations
+
 ```
 1. Log in as user
 2. Read several articles from same category
@@ -327,6 +359,7 @@ CREATE INDEX idx_articles_status ON articles(status);
 ```
 
 ### Test Admin Controls
+
 ```
 1. Log in as admin
 2. Use /api/articles/[id]/publish-status
@@ -342,6 +375,7 @@ CREATE INDEX idx_articles_status ON articles(status);
 ### Useful Queries
 
 **Top authors by article count:**
+
 ```sql
 SELECT users.name, COUNT(*) as article_count
 FROM articles
@@ -352,6 +386,7 @@ ORDER BY article_count DESC;
 ```
 
 **Most popular user articles:**
+
 ```sql
 SELECT articles.title, users.name, COUNT(article_views.id) as views
 FROM articles
@@ -364,6 +399,7 @@ LIMIT 10;
 ```
 
 **User interests distribution:**
+
 ```sql
 SELECT categories.name, COUNT(*) as users_interested
 FROM user_interests
@@ -392,6 +428,7 @@ ORDER BY users_interested DESC;
 ## 📝 Files Created/Modified
 
 ### New Files
+
 - `db/migrations/2026-02-14-user-articles-feature.sql`
 - `run-user-articles-migration.js`
 - `app/api/articles/create/route.js`
@@ -403,6 +440,7 @@ ORDER BY users_interested DESC;
 - `components/home/PersonalizedFeed.jsx`
 
 ### Modified Files
+
 - `app/api/public/articles/[slug]/view/route.js` - Added interest tracking
 - `app/api/public/articles/[slug]/route.js` - Support user authors
 
@@ -411,22 +449,26 @@ ORDER BY users_interested DESC;
 ## 🆘 Troubleshooting
 
 ### Articles not showing in personalized feed
+
 - Check: User has viewed articles from at least one category
 - Check: Articles have status = 'published'
 - Fix: Manually trigger view tracking
 
 ### Author not showing on article
+
 - Check: author_id is set in articles table
 - Check: User exists in users table
 - Fix: Use LEFT JOIN to handle missing authors
 
 ### Interest score not updating
+
 - Check: User is authenticated
 - Check: Article has categories
 - Check: user_interests table exists
 - Fix: Run migration if table missing
 
 ### Admin unpublish not working
+
 - Check: User is admin (role check)
 - Check: Article exists
 - Check: Status field exists
@@ -437,6 +479,7 @@ ORDER BY users_interested DESC;
 ## 📞 Support
 
 For issues or questions:
+
 1. Check deployment logs on Vercel
 2. Check database migrations completed
 3. Verify API endpoints return correct data
@@ -448,6 +491,7 @@ For issues or questions:
 ## Summary
 
 ✅ **Complete implementation** of user article publishing with:
+
 - Direct publishing (no approval needed)
 - Admin unpublish capability
 - Personalized AI recommendations

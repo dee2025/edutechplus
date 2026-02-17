@@ -7,10 +7,7 @@ export async function POST(req, { params }) {
     const session = await getServerSession();
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     // Get user - check if admin
@@ -19,26 +16,29 @@ export async function POST(req, { params }) {
       values: [session.user.email],
     });
 
-    if (users.length === 0 || !['super_admin', 'editor', 'admin'].includes(users[0].role)) {
+    if (
+      users.length === 0 ||
+      !["super_admin", "editor", "admin"].includes(users[0].role)
+    ) {
       return NextResponse.json(
         { message: "Admin access required" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     const { articleId } = await params;
     const { status } = await req.json();
 
-    if (!['published', 'unpublished', 'draft'].includes(status)) {
+    if (!["published", "unpublished", "draft"].includes(status)) {
       return NextResponse.json(
         { message: "Invalid status. Use: published, unpublished, or draft" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Determine published_at based on status
     let publishedAt = null;
-    if (status === 'published') {
+    if (status === "published") {
       publishedAt = new Date();
     }
 
@@ -51,7 +51,7 @@ export async function POST(req, { params }) {
     if (result.affectedRows === 0) {
       return NextResponse.json(
         { message: "Article not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -64,7 +64,7 @@ export async function POST(req, { params }) {
     console.error("Error updating article status:", err);
     return NextResponse.json(
       { message: "Failed to update article" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

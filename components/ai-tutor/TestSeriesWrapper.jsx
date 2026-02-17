@@ -49,7 +49,7 @@ export default function TestSeriesWrapper() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-gradient-to-br from-[#0B0B0B] to-[#1a1a2e] flex items-center justify-center">
+      <div className="h-screen bg-linear-to-br from-[#0B0B0B] to-[#1a1a2e] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full mx-auto mb-4" />
           <p className="text-gray-300">Loading...</p>
@@ -60,7 +60,7 @@ export default function TestSeriesWrapper() {
 
   if (!user) {
     return (
-      <div className="h-screen bg-gradient-to-br from-[#0B0B0B] to-[#1a1a2e] flex items-center justify-center p-4">
+      <div className="h-screen bg-linear-to-br from-[#0B0B0B] to-[#1a1a2e] flex items-center justify-center p-4">
         <AuthModal
           onClose={() => setShowAuth(false)}
           onSuccess={() => {
@@ -73,13 +73,13 @@ export default function TestSeriesWrapper() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0B0B0B] to-[#1a1a2e]">
+    <div className="min-h-screen bg-linear-to-br from-[#0B0B0B] to-[#1a1a2e]">
       {/* Header */}
       <header className="sticky top-0 z-20 bg-[#0B0B0B]/80 backdrop-blur border-b border-gray-700/30">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           {/* User Info */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center">
               <User className="w-6 h-6 text-white" />
             </div>
             <div className="hidden sm:block">

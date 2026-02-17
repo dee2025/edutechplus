@@ -25,7 +25,7 @@ export async function GET(req) {
          FROM articles a
          LEFT JOIN article_categories ac ON ac.article_id = a.id
          LEFT JOIN categories c ON c.id = COALESCE(ac.category_id, a.category_id)
-         WHERE a.status = 'published'
+         WHERE a.status = 'published' AND a.created_by_role = 'user'
          GROUP BY a.id
          ORDER BY a.updated_at DESC
          LIMIT 50000`,
@@ -72,7 +72,7 @@ export async function GET(req) {
 
       if (categories && Array.isArray(categories)) {
         categories.forEach((category) => {
-          const loc = `${BASE_URL}/${category.slug}`;
+          const loc = `${BASE_URL}/categories/${category.slug}`;
           const lastmod = category.updated_at
             ? new Date(category.updated_at).toISOString().split("T")[0]
             : new Date().toISOString().split("T")[0];

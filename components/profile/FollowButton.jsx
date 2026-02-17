@@ -1,34 +1,76 @@
 "use client";
 
+import AuthModal from "@/components/UserAuth/AuthModal";
+import { UserMinus, UserPlus } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { UserPlus, UserMinus } from "lucide-react";
 
-export default function FollowButton({ userId, isFollowing: initialIsFollowing }) {
+export default function FollowButton({
+  userId,
+  isFollowing: initialIsFollowing,
+  isCurrentUser: propIsCurrentUser = false,
+  onFollowChange = null,
+}) {
   const { data: session } = useSession();
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [loading, setLoading] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
 
-  const isCurrentUser = session?.user?.id === userId;
+  // Check if viewing own profile
+  const isCurrentUser = propIsCurrentUser || session?.user?.id === userId;
 
+  // Don't show button if viewing own profile
   if (isCurrentUser) {
-    return null; // Don't show button for own profile
+    return null;
+  }
+
+  // Show Follow button for unauthenticated users, will prompt login
+  if (!session) {
+    return (
+      <>
+        <button
+          onClick={() => setShowAuth(true)}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-cyan-500 text-white hover:bg-cyan-600"
+        >
+          <UserPlus size={18} />
+          <span>Follow</span>
+        </button>
+
+        {showAuth && (
+          <AuthModal
+            onClose={() => setShowAuth(false)}
+            onSuccess={() => {
+              setShowAuth(false);
+              window.location.reload(); // Reload to update session state
+            }}
+          />
+        )}
+      </>
+    );
   }
 
   async function handleFollowToggle() {
-    if (!session) {
-      // Redirect to login
-      window.location.href = "/auth/signin";
-      return;
-    }
-
     setLoading(true);
     try {
       const method = isFollowing ? "DELETE" : "POST";
-      const res = await fetch(`/api/users/${userId}/follow`, { method });
+      const res = await fetch(`/api/users/${userId}/follow`, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (res.ok) {
-        setIsFollowing(!isFollowing);
+        const newFollowingState = !isFollowing;
+        setIsFollowing(newFollowingState);
+
+        // Call callback if provided
+        if (onFollowChange) {
+          onFollowChange(newFollowingState);
+        }
+      } else {
+        const error = await res.json();
+        console.error("Error toggling follow:", error.message);
       }
     } catch (err) {
       console.error("Error toggling follow:", err);

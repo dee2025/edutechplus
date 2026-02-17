@@ -4,6 +4,7 @@ import { Calendar, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import AuthorLink from "../../../components/common/AuthorLink";
 
 export default function LatestArticlesClient() {
   const [articles, setArticles] = useState([]);
@@ -184,7 +185,7 @@ export default function LatestArticlesClient() {
             articles.map((a) => (
               <Link
                 key={a.id}
-                href={`/${a.category_slug}/${a.slug}`}
+                href={`/${a.author_username || a.author_slug}/${a.slug}`}
                 className="group block bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-cyan-500 dark:hover:border-cyan-500 transition-all hover:-translate-y-1"
               >
                 <div className="flex flex-col h-full">
@@ -214,9 +215,15 @@ export default function LatestArticlesClient() {
 
                     <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-700 dark:text-gray-300 font-medium">
-                          {a.author_name}
-                        </span>
+                        <AuthorLink
+                          user={{
+                            name: a.author_name,
+                            username: a.author_username,
+                            slug: a.author_slug,
+                            id: a.author_id,
+                          }}
+                          className="!text-gray-700 !dark:text-gray-300 font-medium"
+                        />
                         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-500">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />

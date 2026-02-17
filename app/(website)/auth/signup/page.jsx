@@ -110,10 +110,10 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0d14] via-[#0b0f19] to-[#0f131b] p-4">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#0a0d14] via-[#0b0f19] to-[#0f131b] p-4">
         <div className="fixed inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 -right-1/2 w-full h-full bg-gradient-to-bl from-cyan-950/10 to-transparent rounded-full blur-3xl" />
-          <div className="absolute -bottom-1/2 left-1/4 w-full h-full bg-gradient-to-tr from-blue-950/10 to-transparent rounded-full blur-3xl" />
+          <div className="absolute top-0 -right-1/2 w-full h-full bg-linear-to-bl from-cyan-950/10 to-transparent rounded-full blur-3xl" />
+          <div className="absolute -bottom-1/2 left-1/4 w-full h-full bg-linear-to-tr from-blue-950/10 to-transparent rounded-full blur-3xl" />
         </div>
 
         <div className="text-center">
@@ -145,10 +145,10 @@ export default function SignUpPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-block w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center font-bold text-white shadow-lg mb-4">
+          <div className="flex w-12 h-12 rounded-xl bg-linear-to-br from-cyan-400 to-cyan-600 items-center justify-center font-bold text-white shadow-lg mb-4">
             E+
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-cyan-500 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl font-bold bg-linear-to-r from-cyan-300 to-cyan-500 bg-clip-text text-transparent mb-2">
             Join Us
           </h1>
           <p className="text-gray-400">
@@ -159,16 +159,13 @@ export default function SignUpPage() {
         {/* Error Alert */}
         {error && (
           <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-3">
-            <AlertCircle
-              className="text-red-400 flex-shrink-0 mt-0.5"
-              size={20}
-            />
+            <AlertCircle className="text-red-400 shrink-0 mt-0.5" size={20} />
             <p className="text-red-300 text-sm">{error}</p>
           </div>
         )}
 
         {/* Card */}
-        <div className="rounded-2xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 backdrop-blur-sm p-8 space-y-6">
+        <div className="rounded-2xl bg-linear-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 backdrop-blur-sm p-8 space-y-6">
           {/* Google Sign Up */}
           <button
             onClick={handleGoogleSignUp}
@@ -320,7 +317,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-500 hover:to-cyan-600 text-white font-medium transition-all disabled:opacity-50 mt-6"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-linear-to-r from-cyan-600 to-cyan-700 hover:from-cyan-500 hover:to-cyan-600 text-white font-medium transition-all disabled:opacity-50 mt-6"
             >
               {loading ? "Creating account..." : "Create Account"}
               <ArrowRight size={18} />

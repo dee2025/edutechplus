@@ -51,7 +51,7 @@ export async function GET(req) {
     const topAuthors = await query({
       query: `
         SELECT 
-          u.id, u.name, u.user_slug, u.avatar_url,
+          u.id, u.name, IFNULL(u.username, u.user_slug) as username, u.user_slug, u.avatar_url,
           COUNT(DISTINCT a.id) as article_count
         FROM users u
         LEFT JOIN articles a ON a.author_id = u.id AND a.status = 'published'

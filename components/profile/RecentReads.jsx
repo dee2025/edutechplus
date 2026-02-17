@@ -123,7 +123,7 @@ export default function RecentReads({ max = 10 }) {
         {visibleItems.map((it) => (
           <li key={it.slug} className="flex items-center gap-3">
             <Link
-              href={`/${it.category_slug}/${it.slug}`}
+              href={`/${it.author_username || it.author_slug}/${it.slug}`}
               className="flex items-center gap-3 w-full"
             >
               <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex-shrink-0">

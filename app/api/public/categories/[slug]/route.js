@@ -21,20 +21,23 @@ export async function GET(req, { params }) {
   const [articles] = await pool.execute(
     `
         SELECT 
-            a.id,
-            a.title,
-            a.slug,
-            a.excerpt,
-            a.featured_image,
-            a.read_time,
-            a.published_at,
-            ad.name AS author_name,
-            c.slug AS category_slug
+          a.id,
+          a.title,
+          a.slug,
+          a.excerpt,
+          a.featured_image,
+          a.read_time,
+          a.published_at,
+          u.name AS author_name,
+          IFNULL(u.username, u.user_slug) AS author_username,
+          u.user_slug AS author_slug,
+          c.slug AS category_slug
         FROM articles a
-        JOIN admins ad ON ad.id = a.author_id
+        LEFT JOIN users u ON u.id = a.author_id
         LEFT JOIN categories c ON c.id = a.category_id
         WHERE a.category_id = ?
           AND a.status = 'published'
+          AND a.created_by_role = 'user'
         ORDER BY a.published_at DESC
         `,
     [category.id],
@@ -43,10 +46,14 @@ export async function GET(req, { params }) {
   // 🔥 Trending (sidebar)
   const [trending] = await pool.execute(
     `
-      SELECT a.id, a.title, a.slug, c.slug AS category_slug
+      SELECT a.id, a.title, a.slug,
+        IFNULL(u.username, u.user_slug) AS author_username,
+        u.user_slug AS author_slug,
+        c.slug AS category_slug
       FROM articles a
+      LEFT JOIN users u ON u.id = a.author_id
       LEFT JOIN categories c ON c.id = a.category_id
-        WHERE status = 'published'
+        WHERE status = 'published' AND a.created_by_role = 'user'
         ORDER BY published_at DESC
         LIMIT 5
         `,

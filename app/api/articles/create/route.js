@@ -9,7 +9,7 @@ export async function POST(req) {
     if (!session?.user?.email) {
       return NextResponse.json(
         { message: "Unauthorized - please login" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -20,27 +20,62 @@ export async function POST(req) {
     });
 
     if (users.length === 0) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     const userId = users[0].id;
-    const { title, subtitle, content, excerpt, category_ids, featured_image, seo_title, seo_description } = await req.json();
+    const {
+      title,
+      subtitle,
+      content,
+      excerpt,
+      tags,
+      featured_image,
+      seo_title,
+      seo_description,
+    } = await req.json();
 
     // Validate required fields
     if (!title?.trim()) {
       return NextResponse.json(
         { message: "Title is required" },
-        { status: 400 }
+        { status: 400 },
+      );
+    }
+
+    if (title.trim().length > 255) {
+      return NextResponse.json(
+        { message: "Title must be 255 characters or less" },
+        { status: 400 },
       );
     }
 
     if (!content?.trim()) {
       return NextResponse.json(
         { message: "Content is required" },
-        { status: 400 }
+        { status: 400 },
+      );
+    }
+
+    // Validate optional field lengths
+    if (subtitle && subtitle.trim().length > 255) {
+      return NextResponse.json(
+        { message: "Subtitle must be 255 characters or less" },
+        { status: 400 },
+      );
+    }
+
+    if (seo_title && seo_title.trim().length > 255) {
+      return NextResponse.json(
+        { message: "SEO title must be 255 characters or less" },
+        { status: 400 },
+      );
+    }
+
+    if (seo_description && seo_description.trim().length > 320) {
+      return NextResponse.json(
+        { message: "SEO description must be 320 characters or less" },
+        { status: 400 },
       );
     }
 
@@ -61,7 +96,7 @@ export async function POST(req) {
     if (existingArticle.length > 0) {
       return NextResponse.json(
         { message: "An article with this title already exists" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -71,8 +106,8 @@ export async function POST(req) {
         INSERT INTO articles (
           title, slug, subtitle, excerpt, content, 
           featured_image, author_id, status, 
-          seo_title, seo_description, published_at, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, NOW(), NOW())
+          seo_title, seo_description, published_at, created_at, created_by_role
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, NOW(), NOW(), 'user')
       `,
       values: [
         title.trim(),
@@ -89,32 +124,48 @@ export async function POST(req) {
 
     const articleId = result.insertId;
 
-    // Add categories if provided
-    if (Array.isArray(category_ids) && category_ids.length > 0) {
-      for (const catId of category_ids) {
-        await query({
-          query: "INSERT INTO article_categories (article_id, category_id) VALUES (?, ?)",
-          values: [articleId, catId],
-        });
-      }
-    }
+    // Handle tags
+    if (Array.isArray(tags) && tags.length > 0) {
+      // Limit to 5 tags
+      const limitedTags = tags.slice(0, 5);
 
-    // Update user interests based on categories they write about
-    if (Array.isArray(category_ids) && category_ids.length > 0) {
-      for (const catId of category_ids) {
+      for (const tagName of limitedTags) {
         try {
-          await query({
-            query: `
-              INSERT INTO user_interests (user_id, category_id, interest_score)
-              VALUES (?, ?, 2.0)
-              ON DUPLICATE KEY UPDATE
-              interest_score = interest_score + 1.0
-            `,
-            values: [userId, catId],
+          // Generate slug for the tag
+          const tagSlug = tagName
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-");
+
+          // Check if tag exists, if not create it
+          let tagId;
+          const existingTag = await query({
+            query: "SELECT id FROM tags WHERE name = ? OR slug = ?",
+            values: [tagName, tagSlug],
           });
-        } catch (e) {
-          // Ignore errors for interest tracking
-          console.error("Error updating user interests:", e);
+
+          if (existingTag.length > 0) {
+            tagId = existingTag[0].id;
+          } else {
+            // Create new tag
+            const newTag = await query({
+              query: "INSERT INTO tags (name, slug, color) VALUES (?, ?, ?)",
+              values: [tagName, tagSlug, "#06B6D4"],
+            });
+            tagId = newTag.insertId;
+          }
+
+          // Link tag to article
+          await query({
+            query:
+              "INSERT IGNORE INTO article_tags (article_id, tag_id) VALUES (?, ?)",
+            values: [articleId, tagId],
+          });
+        } catch (tagErr) {
+          console.error("Error processing tag:", tagName, tagErr);
+          // Continue with other tags even if one fails
         }
       }
     }
@@ -126,9 +177,18 @@ export async function POST(req) {
     });
   } catch (err) {
     console.error("Error creating article:", err);
+
+    // Handle specific database errors
+    if (err.code === "ER_DATA_TOO_LONG") {
+      return NextResponse.json(
+        { message: "One or more fields exceed the maximum allowed length" },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(
-      { message: "Failed to create article" },
-      { status: 500 }
+      { message: err.message || "Failed to create article" },
+      { status: 500 },
     );
   }
 }

@@ -96,7 +96,7 @@ export async function POST(req, { params }) {
       try {
         const query = await import("@/lib/db");
         const db = query.default;
-        
+
         // Get article categories
         const [categories] = await db.execute(
           `SELECT category_id FROM article_categories WHERE article_id = ?`,
@@ -105,15 +105,17 @@ export async function POST(req, { params }) {
 
         // Update interest score for each category
         for (const cat of categories) {
-          await db.execute(
-            `INSERT INTO user_interests (user_id, category_id, interest_score)
+          await db
+            .execute(
+              `INSERT INTO user_interests (user_id, category_id, interest_score)
              VALUES (?, ?, 1.0)
              ON DUPLICATE KEY UPDATE
              interest_score = interest_score + 1.0`,
-            [userId, cat.category_id],
-          ).catch(() => {
-            // Ignore interest tracking errors
-          });
+              [userId, cat.category_id],
+            )
+            .catch(() => {
+              // Ignore interest tracking errors
+            });
         }
       } catch (err) {
         // Silently fail interest tracking

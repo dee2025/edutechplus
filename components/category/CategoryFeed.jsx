@@ -6,7 +6,8 @@ export default function CategoryFeed({ articles, categoryName, categorySlug }) {
     return <p className="text-gray-400">No articles found in this category.</p>;
   }
 
-  const getArticleUrl = (article) => `/${categorySlug}/${article.slug}`;
+  const getArticleUrl = (article) =>
+    `/${article.author_username || article.author_slug || categorySlug}/${article.slug}`;
 
   return (
     <div className="space-y-6">

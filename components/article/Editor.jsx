@@ -103,7 +103,7 @@ export default function Editor({ value, onChange }) {
   return (
     <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden flex flex-col h-full">
       {/* Toolbar */}
-      <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-600 p-3 flex flex-wrap gap-2 flex-shrink-0">
+      <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-600 p-3 flex flex-wrap gap-2 shrink-0">
         {/* Text Formatting */}
         <div className="flex gap-1 border-r border-gray-300 dark:border-gray-600 pr-2">
           <MenuButton
@@ -331,7 +331,7 @@ export default function Editor({ value, onChange }) {
       </div>
 
       {/* Character Count */}
-      <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-300 dark:border-gray-600 text-xs text-gray-600 dark:text-gray-400 flex-shrink-0">
+      <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-300 dark:border-gray-600 text-xs text-gray-600 dark:text-gray-400 shrink-0">
         {(editor?.getText() || "").length} characters
       </div>
     </div>

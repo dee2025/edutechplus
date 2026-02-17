@@ -235,7 +235,7 @@ export default function TestSeriesClient({
           {/* Error Alert */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm flex items-start gap-3 animate-in fade-in">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
               <span className="flex-1">{error}</span>
             </div>
           )}
@@ -439,7 +439,7 @@ export default function TestSeriesClient({
                 </p>
               </div>
               <div
-                className={`flex-shrink-0 text-center px-4 py-2 rounded-lg border text-sm font-mono font-semibold ${
+                className={`shrink-0 text-center px-4 py-2 rounded-lg border text-sm font-mono font-semibold ${
                   timeLeft > 120
                     ? "text-green-700 dark:text-green-400 border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-950/30"
                     : timeLeft > 30
@@ -570,7 +570,7 @@ function TestMcqCard({
       <div className="mb-4 flex items-start gap-3 sm:gap-4">
         {/* Question Number Badge */}
         <div
-          className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
+          className={`shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
             isAnswered
               ? "bg-[#10a37f] text-white border border-[#10a37f]"
               : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
@@ -581,14 +581,14 @@ function TestMcqCard({
 
         {/* Question Text */}
         <div className="flex-1 min-w-0 pt-0.5">
-          <p className="text-gray-900 dark:text-gray-100 font-semibold leading-snug text-sm sm:text-base break-words">
+          <p className="text-gray-900 dark:text-gray-100 font-semibold leading-snug text-sm sm:text-base wrap-break-word">
             {question}
           </p>
         </div>
 
         {/* Answered Indicator */}
         {isAnswered && (
-          <div className="flex-shrink-0 text-[#10a37f] text-lg font-bold mt-0.5">
+          <div className="shrink-0 text-[#10a37f] text-lg font-bold mt-0.5">
             ✓
           </div>
         )}
@@ -616,7 +616,7 @@ function TestMcqCard({
             >
               {/* Option Circle */}
               <div
-                className={`flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center font-bold text-xs transition-all ${
+                className={`shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center font-bold text-xs transition-all ${
                   isSelected
                     ? "bg-[#10a37f] border-[#10a37f] text-white"
                     : "bg-white dark:bg-gray-700 border-gray-400 dark:border-gray-600 text-gray-600 dark:text-gray-400 group-hover:border-gray-500 dark:group-hover:border-gray-500"
@@ -626,7 +626,7 @@ function TestMcqCard({
               </div>
 
               {/* Option Text */}
-              <span className="flex-1 text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors break-words">
+              <span className="flex-1 text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors wrap-break-word">
                 {optionText}
               </span>
             </button>

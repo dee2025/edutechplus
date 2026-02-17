@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { getRoadmapBySlug } from "../../../../lib/roadmaps";
 
 export async function generateMetadata({ params }) {
-  const roadmap = await getRoadmapBySlug(params.slug);
+  const param = await params;
+  const roadmap = await getRoadmapBySlug(param.slug);
   if (!roadmap) return {};
 
   return {

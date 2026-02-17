@@ -63,7 +63,7 @@ async function runMigration() {
     // Add author_id column to articles
     try {
       await connection.execute(
-        "ALTER TABLE articles ADD COLUMN author_id INT DEFAULT NULL COMMENT 'User who created/published article'"
+        "ALTER TABLE articles ADD COLUMN author_id INT DEFAULT NULL COMMENT 'User who created/published article'",
       );
       console.log("✓ Added author_id column to articles");
     } catch (err) {
@@ -77,7 +77,7 @@ async function runMigration() {
     // Add status column to articles
     try {
       await connection.execute(
-        "ALTER TABLE articles ADD COLUMN status VARCHAR(20) DEFAULT 'published' COMMENT 'published, draft, unpublished'"
+        "ALTER TABLE articles ADD COLUMN status VARCHAR(20) DEFAULT 'published' COMMENT 'published, draft, unpublished'",
       );
       console.log("✓ Added status column to articles");
     } catch (err) {
@@ -91,7 +91,7 @@ async function runMigration() {
     // Create indexes
     try {
       await connection.execute(
-        "CREATE INDEX idx_articles_author_status ON articles(author_id, status)"
+        "CREATE INDEX idx_articles_author_status ON articles(author_id, status)",
       );
       console.log("✓ Created idx_articles_author_status");
     } catch (err) {
@@ -104,7 +104,7 @@ async function runMigration() {
 
     try {
       await connection.execute(
-        "CREATE INDEX idx_articles_status ON articles(status)"
+        "CREATE INDEX idx_articles_status ON articles(status)",
       );
       console.log("✓ Created idx_articles_status");
     } catch (err) {

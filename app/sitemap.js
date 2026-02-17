@@ -14,7 +14,6 @@ const STATIC_PAGES = [
   { url: "/privacy-policy", priority: 0.5, changefreq: "monthly" },
   { url: "/terms", priority: 0.5, changefreq: "monthly" },
   { url: "/disclaimer", priority: 0.5, changefreq: "monthly" },
-  { url: "/country-want-to-know", priority: 0.6, changefreq: "weekly" },
 ];
 
 async function generateDynamicPages() {
@@ -83,7 +82,7 @@ async function generateDynamicPages() {
     if (categories && Array.isArray(categories)) {
       categories.forEach((category) => {
         pages.push({
-          url: `/${category.slug}`,
+          url: `/categories/${category.slug}`,
           lastModified: new Date(),
           priority: 0.75,
           changefreq: "weekly",
