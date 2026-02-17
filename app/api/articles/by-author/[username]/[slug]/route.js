@@ -25,6 +25,9 @@ export async function GET(req, { params }) {
             c.name AS category_name,
             c.slug AS category_slug,
             (SELECT COUNT(*) FROM article_views WHERE article_id = a.id) AS views,
+            (SELECT COUNT(*) FROM article_likes WHERE article_id = a.id) AS likes_count,
+            (SELECT COUNT(*) FROM comments WHERE article_id = a.id) AS comments_count,
+            0 AS shares_count,
             (SELECT COUNT(*) FROM user_follows WHERE follower_id = ? AND following_id = u.id) AS is_following
         FROM articles a
         LEFT JOIN users u ON u.id = a.author_id
@@ -60,9 +63,29 @@ export async function GET(req, { params }) {
       [article.id],
     );
 
+    // 🧑‍💻 Latest articles by same author (sidebar)
+    const [latestByAuthor] = await pool.execute(
+      `
+        SELECT
+            a.id,
+            a.title,
+            a.slug,
+            a.published_at,
+            (SELECT COUNT(*) FROM article_views WHERE article_id = a.id) AS views
+        FROM articles a
+        WHERE a.status = 'published'
+          AND a.created_by_role = 'user'
+          AND a.author_id = ?
+          AND a.id != ?
+        ORDER BY a.published_at DESC, a.id DESC
+        LIMIT 5
+      `,
+      [article.author_id, article.id],
+    );
+
     // Enable HTTP caching for public articles
     return NextResponse.json(
-      { article, trending },
+      { article, trending, latestByAuthor },
       {
         headers: {
           "Cache-Control":

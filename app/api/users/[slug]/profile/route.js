@@ -83,9 +83,14 @@ export async function GET(req, { params }) {
         SELECT 
           a.id, a.title, a.slug, a.excerpt, a.featured_image,
           a.published_at,
-          COUNT(DISTINCT av.id) as views
+          COUNT(DISTINCT av.id) as views,
+          COUNT(DISTINCT al.id) as likes_count,
+          COUNT(DISTINCT cm.id) as comments_count,
+          0 as shares_count
         FROM articles a
         LEFT JOIN article_views av ON av.article_id = a.id
+        LEFT JOIN article_likes al ON al.article_id = a.id
+        LEFT JOIN comments cm ON cm.article_id = a.id
         WHERE a.author_id = ? AND a.status = 'published' AND a.created_by_role = 'user'
         GROUP BY a.id
         ORDER BY a.published_at DESC

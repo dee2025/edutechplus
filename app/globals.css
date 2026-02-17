@@ -139,7 +139,7 @@ body {
 
 /* Code blocks - vs code theme wrapper */
 .tiptap-readonly pre {
-  @apply bg-gray-950 border border-gray-700 rounded-lg p-5 my-8 overflow-x-auto shadow-lg max-w-full;
+  @apply bg-gray-950 text-gray-100 border border-gray-700 rounded-lg p-5 my-8 overflow-x-auto shadow-lg max-w-full;
   line-height: 1.6;
   font-size: 13px;
   tab-size: 2;
@@ -155,11 +155,15 @@ body {
   border: none;
   padding: 0;
   margin: 0;
-  color: inherit;
+  color: #f3f4f6 !important;
   white-space: pre;
   word-spacing: normal;
   word-break: normal;
   line-height: 1.6;
+}
+
+.tiptap-readonly pre code span {
+  color: inherit !important;
 }
 
 /* Syntax highlighting colors - VS Code theme */

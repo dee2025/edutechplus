@@ -1,7 +1,7 @@
 import ArticleContent from "@/components/article/ArticleContent";
-import ArticleHeader from "@/components/article/ArticleHeader";
-import ArticleSidebar from "@/components/article/ArticleSidebar";
+import AuthorSidebar from "@/components/article/AuthorSidebar";
 import Comments from "@/components/article/Comments";
+import ArticleTitleActions from "@/components/article/ArticleTitleActions";
 import TrackViewClient from "@/components/article/TrackViewClient";
 import { extractFaqsFromContent } from "@/lib/extractFaqs";
 import { notFound } from "next/navigation";
@@ -79,7 +79,7 @@ export default async function ArticleByAuthorPage({ params }) {
 
   if (!data) return notFound();
 
-  const { article, trending } = data;
+  const { article, latestByAuthor = [] } = data;
 
   let faqs = [];
   try {
@@ -155,12 +155,14 @@ export default async function ArticleByAuthorPage({ params }) {
         )}
       </div>
 
-      <ArticleHeader article={article} categories={article.category_name} />
-
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8 lg:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           <div className="lg:col-span-8">
             <div className="bg-white dark:bg-transparent">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-4 sm:mb-6">
+                {article.title}
+              </h1>
+              <ArticleTitleActions article={article} />
               <ArticleContent article={article} />
               <TrackViewClient article={article} />
 
@@ -168,14 +170,13 @@ export default async function ArticleByAuthorPage({ params }) {
               <div className="mt-8 sm:mt-10 md:mt-12 mb-8 sm:mb-10 border-t border-gray-200 dark:border-gray-800"></div>
 
               {/* Comments */}
-              <Comments slug={article.slug} />
+              <div id="comments-section">
+                <Comments slug={article.slug} />
+              </div>
             </div>
           </div>
           <div className="lg:col-span-4">
-            <ArticleSidebar
-              trending={trending}
-              authorUsername={article.author_username}
-            />
+            <AuthorSidebar article={article} latestByAuthor={latestByAuthor} />
           </div>
         </div>
       </div>

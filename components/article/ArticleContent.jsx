@@ -1,38 +1,3 @@
-// "use client";
-// import Image from "next/image";
-
-// // NOTE: Article content is rendered only via the TipTap read-only renderer.
-// // The markdown/html fallback has been removed — content should be TipTap output.
-
-// export default function ArticleContent({ article }) {
-//   const contentRaw = article && article.content ? String(article.content) : "";
-//   const fallback = article && article.excerpt ? String(article.excerpt) : "";
-
-//   return (
-//     <div className="max-w-3xl mx-auto">
-//       {/* Hero Image */}
-//       {article?.featured_image && (
-//         <Image
-//           src={article.featured_image}
-//           alt={article.title}
-//           width={800}
-//           height={450}
-//           className="rounded-xl mb-8 object-cover"
-//           priority
-//         />
-//       )}
-
-//       <article
-//         dangerouslySetInnerHTML={{
-//           __html: contentRaw,
-//         }}
-//         className="text-gray-300 leading-7 prose prose-slate dark:prose-invert mx-auto"
-
-//       />
-//     </div>
-//   );
-// }
-
 "use client";
 import Image from "next/image";
 import TipTapRenderer from "./TipTapRenderer";
@@ -46,7 +11,7 @@ export default function ArticleContent({ article }) {
       {/* Hero Image */}
       {article?.featured_image && (
         <div className="relative w-full mb-6 sm:mb-8 md:mb-10 rounded-lg sm:rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
-          <div className="relative w-full aspect-video sm:aspect-[21/9]">
+          <div className="relative w-full aspect-[21/9] sm:aspect-[21/9]">
             <Image
               src={article.featured_image}
               alt={article.title}
