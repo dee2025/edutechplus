@@ -1,9 +1,8 @@
 import HomeFeed from "@/components/Home/HomeFeed";
 import LeftSidebar from "@/components/Home/LeftSidebar";
+import RecentlyPublished from "@/components/Home/RecentlyPublished";
 import RightSidebar from "@/components/Home/RightSidebar";
-import FeaturedArticlesCarousel from "@/components/home/FeaturedArticlesCarousel";
-import RecentlyPublished from "@/components/home/RecentlyPublished";
-import TopContributors from "@/components/home/TopContributors";
+import TopContributors from "@/components/Home/TopContributors";
 
 export const metadata = {
   title: "ArticleGrip - Discover & Share Knowledge",
