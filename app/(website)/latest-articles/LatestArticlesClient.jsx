@@ -4,7 +4,7 @@ import { Calendar, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import AuthorLink from \"../../../components/Common/AuthorLink\";
+import AuthorLink from "../../../components/Common/AuthorLink";
 
 export default function LatestArticlesClient() {
   const [articles, setArticles] = useState([]);
