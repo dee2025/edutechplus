@@ -6,7 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://articlegrip.com";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://edutechplus.com";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,14 +21,14 @@ const geistMono = Geist_Mono({
 const orgSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Edu Tech Pluse",
+  name: "EduTechPlus",
   url: BASE_URL,
 };
 
 const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "Edu Tech Pluse",
+  name: "EduTechPlus",
   url: BASE_URL,
   potentialAction: {
     "@type": "SearchAction",
@@ -40,27 +40,27 @@ const websiteSchema = {
 export const metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "Edu Tech Pluse",
-    template: "%s | Edu Tech Pluse",
+    default: "EduTechPlus",
+    template: "%s | EduTechPlus",
   },
   description:
-    "Discover insights and updates with Edu Tech Pluse – your source for the latest content.",
+    "Discover insights and updates with EduTechPlus – your source for the latest content.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Edu Tech Pluse",
+    title: "EduTechPlus",
     description:
-      "Discover insights and updates with Edu Tech Pluse – your source for the latest content.",
+      "Discover insights and updates with EduTechPlus – your source for the latest content.",
     url: "/",
-    siteName: "Edu Tech Pluse",
+    siteName: "EduTechPlus",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Edu Tech Pluse",
+    title: "EduTechPlus",
     description:
-      "Discover insights and updates with Edu Tech Pluse – your source for the latest content.",
+      "Discover insights and updates with EduTechPlus – your source for the latest content.",
   },
   robots: {
     index: true,

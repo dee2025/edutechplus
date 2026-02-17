@@ -5,25 +5,47 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import AuthorLink from "../Common/AuthorLink";
 
-export default function RightSidebar() {
-  const [trendingTags, setTrendingTags] = useState([]);
-  const [topArticles, setTopArticles] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+export default function RightSidebar({
+  initialTrendingTags = [],
+  initialTopArticles = [],
+  initialStats = null,
+}) {
+  const [trendingTags, setTrendingTags] = useState(initialTrendingTags);
+  const [topArticles, setTopArticles] = useState(initialTopArticles);
+  const [stats, setStats] = useState(initialStats);
+  const [loading, setLoading] = useState(
+    !initialStats ||
+      initialTopArticles.length === 0 ||
+      initialTrendingTags.length === 0,
+  );
   const normalizeSlug = (slug) =>
     (slug || "").replace(/^\/?(articles|article)\//, "");
 
   useEffect(() => {
+    if (
+      initialStats &&
+      initialTopArticles.length > 0 &&
+      initialTrendingTags.length > 0
+    ) {
+      setStats(initialStats);
+      setTopArticles(initialTopArticles);
+      setTrendingTags(initialTrendingTags);
+      setLoading(false);
+      return;
+    }
+
     fetchData();
-  }, []);
+  }, [initialStats, initialTopArticles, initialTrendingTags]);
 
   async function fetchData() {
     try {
       setLoading(true);
       const [tagsRes, articlesRes, statsRes] = await Promise.all([
-        fetch("/api/tags/trending"),
-        fetch("/api/articles/most-viewed?limit=5&days=7"),
-        fetch("/api/stats/platform"),
+        fetch("/api/tags/trending", { cache: "no-store" }),
+        fetch("/api/articles/most-viewed?limit=5&days=7", {
+          cache: "no-store",
+        }),
+        fetch("/api/stats/platform", { cache: "no-store" }),
       ]);
 
       if (tagsRes.ok) {

@@ -33,6 +33,7 @@ export async function GET(req) {
               a.author_id, u.name as author_name, IFNULL(u.username, u.user_slug) as author_username, u.user_slug as author_slug,
               c.id as category_id, c.name as category_name, c.slug as category_slug,
               COUNT(DISTINCT av.id) as views,
+              COUNT(DISTINCT al.user_id) as likes_count,
               COUNT(DISTINCT cm.id) as comments_count,
               a.published_at, a.created_at
             FROM articles a
@@ -40,6 +41,7 @@ export async function GET(req) {
             LEFT JOIN article_categories ac ON ac.article_id = a.id
             LEFT JOIN categories c ON c.id = ac.category_id
             LEFT JOIN article_views av ON av.article_id = a.id
+            LEFT JOIN article_likes al ON al.article_id = a.id
             LEFT JOIN comments cm ON cm.article_id = a.id AND cm.is_deleted = 0 AND cm.is_approved = 1
             WHERE a.status = 'published' AND a.created_by_role = 'user' AND a.author_id != ?
             GROUP BY a.id
@@ -60,6 +62,7 @@ export async function GET(req) {
             a.author_id, u.name as author_name, IFNULL(u.username, u.user_slug) as author_username, u.user_slug as author_slug,
             c.id as category_id, c.name as category_name, c.slug as category_slug,
             COUNT(DISTINCT av.id) as views,
+            COUNT(DISTINCT al.user_id) as likes_count,
             COUNT(DISTINCT cm.id) as comments_count,
             a.published_at, a.created_at
           FROM articles a
@@ -67,6 +70,7 @@ export async function GET(req) {
           LEFT JOIN article_categories ac ON ac.article_id = a.id
           LEFT JOIN categories c ON c.id = ac.category_id
           LEFT JOIN article_views av ON av.article_id = a.id
+            LEFT JOIN article_likes al ON al.article_id = a.id
           LEFT JOIN comments cm ON cm.article_id = a.id AND cm.is_deleted = 0 AND cm.is_approved = 1
           WHERE a.status = 'published' AND a.created_by_role = 'user'
           GROUP BY a.id

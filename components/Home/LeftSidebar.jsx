@@ -1,7 +1,6 @@
 "use client";
 
 import AuthModal from "@/components/UserAuth/AuthModal";
-import { Tag } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -9,27 +8,66 @@ import { useEffect, useState } from "react";
 export default function LeftSidebar() {
   const { data: session } = useSession();
   const [showAuth, setShowAuth] = useState(false);
-  const [tags, setTags] = useState([]);
-  const [tagsLoading, setTagsLoading] = useState(true);
+  const [following, setFollowing] = useState([]);
+  const [followingLoading, setFollowingLoading] = useState(false);
 
   useEffect(() => {
-    fetchTrendingTags();
-  }, []);
+    let cancelled = false;
 
-  async function fetchTrendingTags() {
-    try {
-      setTagsLoading(true);
-      const res = await fetch("/api/tags/trending");
-      const data = await res.json();
-      if (res.ok) {
-        setTags(data.tags?.slice(0, 5) || []);
+    async function fetchFollowingMembers() {
+      if (!session?.user?.email) {
+        setFollowing([]);
+        return;
       }
-    } catch (err) {
-      console.error("Failed to fetch trending tags:", err);
-    } finally {
-      setTagsLoading(false);
+
+      try {
+        setFollowingLoading(true);
+
+        const meRes = await fetch("/api/auth/me", { cache: "no-store" });
+        if (!meRes.ok) {
+          if (!cancelled) setFollowing([]);
+          return;
+        }
+
+        const me = await meRes.json();
+        if (!me?.id) {
+          if (!cancelled) setFollowing([]);
+          return;
+        }
+
+        const followingRes = await fetch(
+          `/api/users/${me.id}/following?limit=6`,
+          {
+            cache: "no-store",
+          },
+        );
+
+        if (!followingRes.ok) {
+          if (!cancelled) setFollowing([]);
+          return;
+        }
+
+        const data = await followingRes.json();
+        if (!cancelled) {
+          setFollowing(data.following || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch following members:", err);
+        if (!cancelled) {
+          setFollowing([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setFollowingLoading(false);
+        }
+      }
     }
-  }
+
+    fetchFollowingMembers();
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.user?.email]);
 
   return (
     <aside className="hidden lg:block w-64 sticky top-20 h-fit">
@@ -64,47 +102,54 @@ export default function LeftSidebar() {
           </div>
         )}
 
-        {/* Tags */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
-            <Tag size={16} />
-            Popular Tags
-          </h3>
-          <div className="space-y-2">
-            {tagsLoading ? (
-              // Loading skeleton
-              [...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-7 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"
-                />
-              ))
-            ) : tags.length > 0 ? (
-              tags.map((tag) => (
-                <Link
-                  key={tag.id}
-                  href={`/tags/${tag.slug}`}
-                  className="block px-3 py-1 text-sm text-cyan-500 hover:bg-cyan-50 dark:hover:bg-gray-800 rounded transition-colors"
-                >
-                  #{tag.name}
-                  <span className="text-xs text-gray-400 ml-1">
-                    ({tag.article_count})
-                  </span>
-                </Link>
-              ))
-            ) : (
+        {/* Following Members */}
+        {session?.user && (
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              Following
+            </h3>
+
+            {followingLoading ? (
+              <div className="space-y-2">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-8 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : following.length === 0 ? (
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                No tags yet
+                You are not following anyone yet.
               </p>
+            ) : (
+              <div className="space-y-2">
+                {following.map((member) => (
+                  <Link
+                    key={member.id}
+                    href={`/profile/${member.username || member.user_slug || member.id}`}
+                    className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-cyan-500 text-white flex items-center justify-center text-xs font-semibold overflow-hidden">
+                      {member.avatar_url ? (
+                        <img
+                          src={member.avatar_url}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        (member.name || "U").charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                      {member.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             )}
           </div>
-          <Link
-            href="/tags"
-            className="text-xs text-cyan-500 hover:text-cyan-600 font-medium mt-3 block"
-          >
-            View all tags →
-          </Link>
-        </div>
+        )}
 
         {/* About */}
         <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">

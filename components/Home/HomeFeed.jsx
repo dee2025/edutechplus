@@ -7,10 +7,12 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import AuthorLink from "../Common/AuthorLink";
 
-export default function HomeFeed({ filter = "latest" }) {
+export default function HomeFeed({ filter = "latest", initialArticles = [] }) {
   const { data: session, status } = useSession();
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [articles, setArticles] = useState(initialArticles);
+  const [loading, setLoading] = useState(
+    !(filter === "latest" && initialArticles.length > 0),
+  );
   const [activeFilter, setActiveFilter] = useState(filter);
   const [likedArticles, setLikedArticles] = useState(new Set());
   const [likeCounts, setLikeCounts] = useState({});
@@ -41,32 +43,16 @@ export default function HomeFeed({ filter = "latest" }) {
         endpoint = `/api/articles/latest?limit=20`;
       }
 
-      const res = await fetch(endpoint);
+      const res = await fetch(endpoint, { cache: "no-store" });
       const data = await res.json();
 
       if (res.ok) {
         const articlesData = data.articles || [];
         setArticles(articlesData);
 
-        // Fetch likes count for each article
-        const counts = {};
-        for (const article of articlesData) {
-          try {
-            const likeRes = await fetch(`/api/articles/${article.id}/like`);
-            const likeData = await likeRes.json();
-            if (likeRes.ok) {
-              counts[article.id] = likeData.likesCount;
-              if (likeData.isLiked) {
-                setLikedArticles((prev) => new Set([...prev, article.id]));
-              }
-            }
-          } catch (err) {
-            console.error(
-              `Failed to fetch likes for article ${article.id}:`,
-              err,
-            );
-          }
-        }
+        const counts = Object.fromEntries(
+          articlesData.map((article) => [article.id, article.likes_count || 0]),
+        );
         setLikeCounts(counts);
       } else {
         console.error("Failed to fetch articles:", data.error);
@@ -81,8 +67,43 @@ export default function HomeFeed({ filter = "latest" }) {
   }, [activeFilter]);
 
   useEffect(() => {
+    if (activeFilter === "latest" && initialArticles.length > 0) {
+      setArticles(initialArticles);
+      const counts = Object.fromEntries(
+        initialArticles.map((article) => [
+          article.id,
+          article.likes_count || 0,
+        ]),
+      );
+      setLikeCounts(counts);
+      setLoading(false);
+      return;
+    }
+
     fetchArticles();
-  }, [fetchArticles]);
+  }, [fetchArticles, activeFilter, initialArticles]);
+
+  useEffect(() => {
+    async function fetchLikedArticles() {
+      try {
+        const res = await fetch("/api/articles/likes", { cache: "no-store" });
+        if (!res.ok) {
+          setLikedArticles(new Set());
+          return;
+        }
+        const data = await res.json();
+        setLikedArticles(new Set(data.likedArticles || []));
+      } catch (err) {
+        console.error("Failed to fetch liked articles:", err);
+      }
+    }
+
+    if (status === "authenticated") {
+      fetchLikedArticles();
+    } else if (status === "unauthenticated") {
+      setLikedArticles(new Set());
+    }
+  }, [status]);
 
   const handleLike = async (articleId) => {
     if (!session) {

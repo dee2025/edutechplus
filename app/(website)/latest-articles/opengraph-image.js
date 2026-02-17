@@ -33,7 +33,7 @@ export default function OpenGraphImage() {
           color: "#22d3ee",
         }}
       >
-        Edu Tech Pluse
+        EduTechPlus
       </div>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <div style={{ fontSize: 64, fontWeight: 700, lineHeight: 1.1 }}>

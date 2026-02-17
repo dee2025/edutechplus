@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import AuthorLink from "../Common/AuthorLink";
 
-export default function RecentlyPublished() {
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function RecentlyPublished({ initialArticles = [] }) {
+  const [articles, setArticles] = useState(initialArticles);
+  const [loading, setLoading] = useState(initialArticles.length === 0);
 
   const normalizeSlug = (slug) =>
     (slug || "").replace(/^\/?(articles|article)\//, "");
@@ -15,12 +15,20 @@ export default function RecentlyPublished() {
     `/${article.author_username || article.author_slug || article.author_id}/${normalizeSlug(article.slug)}`;
 
   useEffect(() => {
+    if (initialArticles.length > 0) {
+      setArticles(initialArticles);
+      setLoading(false);
+      return;
+    }
+
     fetchRecent();
-  }, []);
+  }, [initialArticles]);
 
   async function fetchRecent() {
     try {
-      const res = await fetch("/api/articles/latest?limit=6");
+      const res = await fetch("/api/articles/latest?limit=6", {
+        cache: "no-store",
+      });
       const data = await res.json();
       setArticles(data.articles || []);
     } catch (err) {

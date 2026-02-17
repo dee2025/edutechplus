@@ -1,6 +1,6 @@
 import { query } from "@/lib/db";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://articlegrip.com";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://edutechplus.com";
 const ITEMS_PER_PAGE = 50; // Google recommends max 50k URLs per sitemap
 
 // Static pages with their priority and change frequency

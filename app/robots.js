@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://articlegrip.com";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://edutechplus.com";
 
 export default function robots() {
   return {

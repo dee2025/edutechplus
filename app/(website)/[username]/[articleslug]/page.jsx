@@ -111,7 +111,7 @@ export default async function ArticleByAuthorPage({ params }) {
     },
     publisher: {
       "@type": "Organization",
-      name: "ArticleGrip",
+      name: "EduTechPlus",
     },
     mainEntityOfPage: {
       "@type": "WebPage",

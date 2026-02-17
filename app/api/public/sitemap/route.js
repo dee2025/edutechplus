@@ -1,7 +1,7 @@
 import { query } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://articlegrip.com";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://edutechplus.com";
 
 export async function GET(req) {
   try {

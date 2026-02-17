@@ -1,7 +1,7 @@
 import { query } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://articlegrip.com";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://edutechplus.com";
 
 function escapeXml(value) {
   if (!value) return "";
@@ -41,9 +41,9 @@ export async function GET() {
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
 <channel>
-  <title>Edu Tech Pluse</title>
+  <title>EduTechPlus</title>
   <link>${BASE_URL}</link>
-  <description>Latest articles and insights from Edu Tech Pluse.</description>
+  <description>Latest articles and insights from EduTechPlus.</description>
   <language>en-us</language>
   <lastBuildDate>${now}</lastBuildDate>${itemsXml}
 </channel>

@@ -49,7 +49,7 @@ export async function POST(req) {
       cloudinary.uploader
         .upload_stream(
           {
-            folder: "articlegrip-user-articles", // Separate folder for user uploads
+            folder: "edutechplus-user-articles", // Separate folder for user uploads
             resource_type: "image",
             transformation: [{ quality: "auto", fetch_format: "auto" }],
           },

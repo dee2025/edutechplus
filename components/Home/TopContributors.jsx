@@ -4,17 +4,23 @@ import { Trophy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export default function TopContributors() {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+export default function TopContributors({ initialStats = null }) {
+  const [stats, setStats] = useState(initialStats);
+  const [loading, setLoading] = useState(!initialStats);
 
   useEffect(() => {
+    if (initialStats) {
+      setStats(initialStats);
+      setLoading(false);
+      return;
+    }
+
     fetchContributors();
-  }, []);
+  }, [initialStats]);
 
   async function fetchContributors() {
     try {
-      const res = await fetch("/api/stats/platform");
+      const res = await fetch("/api/stats/platform", { cache: "no-store" });
       const data = await res.json();
       setStats(data.stats);
     } catch (err) {

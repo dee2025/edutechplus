@@ -7,27 +7,40 @@ export async function GET(req) {
     // Use NextAuth to get the session
     const session = await getServerSession();
 
-    if (!session?.user?.email) {
+    if (!session?.user?.email && !session?.user?.id) {
       return NextResponse.json(null);
     }
 
-    // Fetch full user data from database using email with follower/article counts
+    const userId = session?.user?.id ? Number(session.user.id) : null;
+
+    // Fetch full user data with light-weight correlated counts (less expensive than multi-join DISTINCT aggregation)
     const users = await query({
       query: `
         SELECT 
           u.id, u.name, u.email, u.avatar_url, u.bio, u.username, u.user_slug,
           u.provider, u.provider_id, u.email_verified, u.created_at,
-          COUNT(DISTINCT uf1.follower_id) as followers_count,
-          COUNT(DISTINCT uf2.following_id) as following_count,
-          COUNT(DISTINCT a.id) as articles_count
+          (
+            SELECT COUNT(*)
+            FROM user_follows uf1
+            WHERE uf1.following_id = u.id
+          ) as followers_count,
+          (
+            SELECT COUNT(*)
+            FROM user_follows uf2
+            WHERE uf2.follower_id = u.id
+          ) as following_count,
+          (
+            SELECT COUNT(*)
+            FROM articles a
+            WHERE a.author_id = u.id
+              AND a.status = 'published'
+              AND a.created_by_role = 'user'
+          ) as articles_count
         FROM users u
-        LEFT JOIN user_follows uf1 ON uf1.following_id = u.id
-        LEFT JOIN user_follows uf2 ON uf2.follower_id = u.id
-        LEFT JOIN articles a ON a.author_id = u.id AND a.status = 'published' AND a.created_by_role = 'user'
-        WHERE u.email = ?
-        GROUP BY u.id
+        WHERE ${userId ? "u.id = ?" : "u.email = ?"}
+        LIMIT 1
       `,
-      values: [session.user.email],
+      values: [userId || session.user.email],
     });
 
     if (users.length === 0) {

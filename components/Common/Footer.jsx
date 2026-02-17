@@ -1,11 +1,56 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [subscribeMsg, setSubscribeMsg] = useState("");
+  const [subscribeErr, setSubscribeErr] = useState("");
+
+  async function handleSubscribe(e) {
+    e.preventDefault();
+
+    if (!email.trim()) {
+      setSubscribeErr("Please enter your email address");
+      setSubscribeMsg("");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setSubscribeErr("");
+      setSubscribeMsg("");
+
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setSubscribeErr(data.error || "Failed to subscribe");
+        return;
+      }
+
+      setSubscribeMsg(data.message || "Subscribed successfully");
+      setEmail("");
+    } catch (error) {
+      console.error("Subscription error:", error);
+      setSubscribeErr("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <footer className="bg-gray-50 dark:bg-[#0b0f19] border-t border-gray-200 dark:border-gray-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 py-14">
         {/* Top Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-1">
@@ -24,102 +69,41 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Sections */}
+          {/* Newsletter */}
           <div>
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-200 mb-4">
-              Sections
+              Subscribe to Newsletter
             </h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li>
-                <Link
-                  href="/latest"
-                  className="hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  Latest News
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/ai"
-                  className="hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  AI & ML
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/programming"
-                  className="hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  Programming
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/gadgets"
-                  className="hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  Gadgets
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/startups"
-                  className="hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  Startups
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Topics */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-200 mb-4">
-              Topics
-            </h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li>
-                <Link
-                  href="/cyber-security"
-                  className="hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  Cybersecurity
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/space-tech"
-                  className="hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  Space Tech
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/edtech"
-                  className="hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  EdTech
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/reviews"
-                  className="hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  Reviews
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/guides"
-                  className="hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  Guides
-                </Link>
-              </li>
-            </ul>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Get the latest articles, updates, and learning resources in your
+              inbox.
+            </p>
+            <form onSubmit={handleSubscribe} className="space-y-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111827] text-gray-900 dark:text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400"
+              />
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full px-3 py-2 rounded-md bg-cyan-500 hover:bg-cyan-600 disabled:opacity-60 text-white font-medium transition-colors"
+              >
+                {submitting ? "Subscribing..." : "Subscribe"}
+              </button>
+            </form>
+            {subscribeMsg && (
+              <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                {subscribeMsg}
+              </p>
+            )}
+            {subscribeErr && (
+              <p className="text-xs text-red-600 dark:text-red-400 mt-2">
+                {subscribeErr}
+              </p>
+            )}
           </div>
 
           {/* Legal */}
