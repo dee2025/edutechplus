@@ -18,7 +18,6 @@ export default function DashboardLive() {
   const [metrics, setMetrics] = useState({
     total_articles: 0,
     published: 0,
-    categories: 0,
     views_today: 0,
     views_7d: 0,
     views_total: 0,
@@ -264,12 +263,7 @@ export default function DashboardLive() {
               Quick Actions
             </h3>
             <div className="space-y-2">
-              <Link
-                href="/admin/categories"
-                className="block text-xs font-medium text-cyan-400 hover:text-cyan-300 p-2 rounded hover:bg-gray-700/30 transition-all"
-              >
-                Manage Categories
-              </Link>
+              {/* Remove Manage Categories link */}
               <Link
                 href="/admin/subscribers"
                 className="block text-xs font-medium text-cyan-400 hover:text-cyan-300 p-2 rounded hover:bg-gray-700/30 transition-all"

@@ -29,7 +29,7 @@ export default function HomeFeed({ filter = "latest", initialArticles = [] }) {
     );
     return `/${author}/${normalizeSlug(article.slug)}`;
   };
-  const getCategoryUrl = (category) => `/categories/${category.slug}`;
+  // Removed getCategoryUrl
 
   const fetchArticles = useCallback(async () => {
     setLoading(true);
@@ -314,20 +314,7 @@ export default function HomeFeed({ filter = "latest", initialArticles = [] }) {
                 {article.excerpt || article.description}
               </p>
 
-              {/* Tags/Categories */}
-              {article.categories && article.categories.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {article.categories.slice(0, 3).map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={getCategoryUrl(cat)}
-                      className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      {cat.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
+              {/* Tags logic can be added here if needed */}
 
               {/* Footer - Actions */}
               <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">

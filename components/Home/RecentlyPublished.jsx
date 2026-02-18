@@ -102,18 +102,7 @@ export default function RecentlyPublished({ initialArticles = [] }) {
 
             {/* Content */}
             <div className="p-4 space-y-3">
-              {article.categories && article.categories.length > 0 && (
-                <div className="flex items-center gap-1 flex-wrap">
-                  {article.categories.slice(0, 2).map((cat) => (
-                    <span
-                      key={cat.id}
-                      className="text-xs px-2 py-0.5 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 rounded-full"
-                    >
-                      {cat.name}
-                    </span>
-                  ))}
-                </div>
-              )}
+              {/* Tags logic can be added here if needed */}
 
               <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100 line-clamp-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                 {article.title}
