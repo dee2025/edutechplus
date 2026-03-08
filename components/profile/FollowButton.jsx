@@ -3,7 +3,7 @@
 import AuthModal from "@/components/UserAuth/AuthModal";
 import { UserMinus, UserPlus } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function FollowButton({
   userId,
@@ -15,9 +15,80 @@ export default function FollowButton({
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [loading, setLoading] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(session?.user?.id ?? null);
+
+  // Keep internal state aligned when parent follow-status resolves asynchronously.
+  useEffect(() => {
+    setIsFollowing(Boolean(initialIsFollowing));
+  }, [initialIsFollowing]);
+
+  // Resolve current user id reliably (session user id is not always present).
+  useEffect(() => {
+    let active = true;
+
+    async function resolveCurrentUserId() {
+      if (!session) {
+        if (active) setCurrentUserId(null);
+        return;
+      }
+
+      if (session?.user?.id != null) {
+        if (active) setCurrentUserId(session.user.id);
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        const data = await res.json();
+        if (active) {
+          setCurrentUserId(data?.id ?? null);
+        }
+      } catch {
+        if (active) setCurrentUserId(null);
+      }
+    }
+
+    resolveCurrentUserId();
+
+    return () => {
+      active = false;
+    };
+  }, [session]);
+
+  // Fetch follow status from API so UI is always correct (including article sidebar).
+  useEffect(() => {
+    let active = true;
+
+    async function refreshFollowStatus() {
+      if (!session || !userId || currentUserId == null) return;
+      if (String(currentUserId) === String(userId)) return;
+
+      try {
+        const res = await fetch(
+          `/api/users/${userId}/is-following?follower_id=${currentUserId}`,
+          { cache: "no-store" },
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (active && typeof data?.isFollowing === "boolean") {
+          setIsFollowing(data.isFollowing);
+        }
+      } catch {
+        // Ignore transient follow status errors.
+      }
+    }
+
+    refreshFollowStatus();
+
+    return () => {
+      active = false;
+    };
+  }, [session, userId, currentUserId]);
 
   // Check if viewing own profile
-  const isCurrentUser = propIsCurrentUser || session?.user?.id === userId;
+  const isCurrentUser =
+    propIsCurrentUser ||
+    (currentUserId != null && String(currentUserId) === String(userId));
 
   // Don't show button if viewing own profile
   if (isCurrentUser) {

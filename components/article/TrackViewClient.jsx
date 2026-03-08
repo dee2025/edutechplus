@@ -118,6 +118,25 @@ export default function TrackViewClient({ article }) {
 
               const ok = results.some((r) => r && r.ok);
               if (ok) {
+                const publicRes = results[0];
+                if (publicRes?.ok && publicRes?.json) {
+                  try {
+                    const payload = await publicRes.json();
+                    if (typeof payload?.views === "number") {
+                      window.dispatchEvent(
+                        new CustomEvent("article-view-updated", {
+                          detail: {
+                            slug: article.slug,
+                            views: payload.views,
+                          },
+                        }),
+                      );
+                    }
+                  } catch {
+                    // Ignore response parsing failures.
+                  }
+                }
+
                 try {
                   localStorage.setItem(viewedKey, String(now));
                   localStorage.removeItem(pendingKey);
@@ -271,6 +290,17 @@ export default function TrackViewClient({ article }) {
       });
 
       if ((pubRes && pubRes.ok) || (authRes && authRes.ok)) {
+        if (typeof pubJson?.views === "number") {
+          window.dispatchEvent(
+            new CustomEvent("article-view-updated", {
+              detail: {
+                slug: article.slug,
+                views: pubJson.views,
+              },
+            }),
+          );
+        }
+
         try {
           localStorage.setItem(viewedKey, String(Date.now()));
           localStorage.removeItem(pendingKey);
@@ -298,12 +328,11 @@ export default function TrackViewClient({ article }) {
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
         const isDebugParam = params.get("track_debug") === "1";
-        const isDev = process.env.NODE_ENV !== "production";
-        if (isDebugParam || isDev) {
+        if (isDebugParam) {
           console.debug(
-            "TrackViewClient: auto clearing TTL and forcing record (debug or dev)",
+            "TrackViewClient: auto clearing TTL and forcing record (track_debug=1)",
           );
-          // Auto-clear viewed TTL in debug/dev mode then force a record
+          // Auto-clear viewed TTL and force a record only in explicit debug mode.
           clearViewedKey();
           forceRecord();
         }
@@ -314,9 +343,8 @@ export default function TrackViewClient({ article }) {
   }, [article.slug]);
 
   const showDebug =
-    (typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("track_debug") === "1") ||
-    process.env.NODE_ENV !== "production";
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("track_debug") === "1";
 
   return (
     // dev helper panel for testing
@@ -331,11 +359,9 @@ export default function TrackViewClient({ article }) {
             </div>
           )}
 
-          {process.env.NODE_ENV !== "production" && (
-            <div className="mt-2 px-3 py-2 bg-yellow-600 text-black rounded text-sm">
-              Debug mode: views auto-record on page load
-            </div>
-          )}
+          <div className="mt-2 px-3 py-2 bg-yellow-600 text-black rounded text-sm">
+            Debug mode: views auto-record on page load
+          </div>
 
           {lastResult && (
             <pre className="mt-2 p-2 bg-[#0b0f19] border border-gray-700 text-xs text-gray-200 rounded max-w-xs overflow-auto">

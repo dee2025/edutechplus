@@ -1,4 +1,5 @@
 import pool from "@/lib/db";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
@@ -7,6 +8,18 @@ export async function GET(req, { params }) {
   const slug = param.slug;
 
   try {
+    let followerId = null;
+    const session = await getServerSession();
+    if (session?.user?.email) {
+      const [currentUsers] = await pool.execute(
+        `SELECT id FROM users WHERE email = ? LIMIT 1`,
+        [session.user.email],
+      );
+      if (currentUsers?.length > 0) {
+        followerId = currentUsers[0].id;
+      }
+    }
+
     // 📰 Fetch article by author username + article slug
     const [[article]] = await pool.execute(
       `
@@ -37,7 +50,7 @@ export async function GET(req, { params }) {
           AND a.created_by_role = 'user'
           AND (u.username = ? OR u.user_slug = ?)
       `,
-      [null, slug, username, username], // null for is_following in unauthenticated context
+      [followerId, slug, username, username],
     );
 
     if (!article) {
@@ -83,13 +96,15 @@ export async function GET(req, { params }) {
       [article.author_id, article.id],
     );
 
-    // Enable HTTP caching for public articles
+    const cacheControl = followerId
+      ? "private, no-store"
+      : "public, s-maxage=3600, stale-while-revalidate=86400";
+
     return NextResponse.json(
       { article, trending, latestByAuthor },
       {
         headers: {
-          "Cache-Control":
-            "public, s-maxage=3600, stale-while-revalidate=86400",
+          "Cache-Control": cacheControl,
         },
       },
     );

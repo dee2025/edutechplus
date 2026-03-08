@@ -10,10 +10,58 @@ export default function ArticleTitleActions({ article }) {
   const [likesCount, setLikesCount] = useState(
     Number(article?.likes_count || 0),
   );
+  const [viewsCount, setViewsCount] = useState(Number(article?.views || 0));
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+
+  useEffect(() => {
+    setViewsCount(Number(article?.views || 0));
+  }, [article?.views]);
+
+  useEffect(() => {
+    if (!article?.slug) return;
+
+    let mounted = true;
+
+    async function loadViews() {
+      try {
+        const res = await fetch(
+          `/api/public/articles/${article.slug}/view?ts=${Date.now()}`,
+          {
+            cache: "no-store",
+          },
+        );
+
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted) return;
+
+        if (typeof data?.views === "number") {
+          setViewsCount(data.views);
+        }
+      } catch {
+        // Ignore transient view fetch errors.
+      }
+    }
+
+    function onViewUpdate(event) {
+      const detail = event?.detail;
+      if (!detail || detail.slug !== article.slug) return;
+      if (typeof detail.views === "number") {
+        setViewsCount(detail.views);
+      }
+    }
+
+    loadViews();
+    window.addEventListener("article-view-updated", onViewUpdate);
+
+    return () => {
+      mounted = false;
+      window.removeEventListener("article-view-updated", onViewUpdate);
+    };
+  }, [article?.slug]);
 
   useEffect(() => {
     let mounted = true;
@@ -102,7 +150,7 @@ export default function ArticleTitleActions({ article }) {
       <div className="mb-5 sm:mb-7 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
         <span className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 dark:border-gray-700 px-2.5 py-1.5">
           <Eye size={14} />
-          {article.views || 0}
+          {viewsCount.toLocaleString()}
         </span>
 
         <button
