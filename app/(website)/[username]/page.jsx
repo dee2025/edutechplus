@@ -14,11 +14,13 @@ import {
   MapPin,
   MessageCircle,
   Share2,
+  Trash2,
   Twitter,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -28,6 +30,7 @@ export default function UserProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [deletingArticleId, setDeletingArticleId] = useState(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -91,6 +94,35 @@ export default function UserProfilePage() {
     }
   }
 
+  async function handleDeleteArticle(event, articleId) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const confirmed = window.confirm(
+      "Delete this article permanently? This action cannot be undone.",
+    );
+    if (!confirmed) return;
+
+    try {
+      setDeletingArticleId(articleId);
+      const res = await fetch(`/api/articles/${articleId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to delete article");
+      }
+
+      toast.success("Article deleted");
+      await fetchData();
+    } catch (err) {
+      toast.error(err.message || "Failed to delete article");
+    } finally {
+      setDeletingArticleId(null);
+    }
+  }
+
   const isOwnProfile = currentUser && user && currentUser.id === user.id;
 
   if (loading) {
@@ -112,7 +144,7 @@ export default function UserProfilePage() {
             User not found
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            The profile you're looking for doesn't exist.
+            The profile you&apos;re looking for doesn&apos;t exist.
           </p>
           <Link
             href="/"
@@ -339,9 +371,27 @@ export default function UserProfilePage() {
                         />
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors line-clamp-2">
-                          {article.title}jkhjkh
-                        </h3>
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors line-clamp-2">
+                            {article.title}
+                          </h3>
+                          {isOwnProfile && (
+                            <button
+                              onClick={(event) =>
+                                handleDeleteArticle(event, article.id)
+                              }
+                              disabled={deletingArticleId === article.id}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-60 disabled:cursor-not-allowed text-xs"
+                              title="Delete article"
+                              aria-label={`Delete ${article.title}`}
+                            >
+                              <Trash2 size={14} />
+                              {deletingArticleId === article.id
+                                ? "Deleting..."
+                                : "Delete"}
+                            </button>
+                          )}
+                        </div>
                         <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-500">
                           <span className="inline-flex items-center gap-1">
                             <Eye size={14} />

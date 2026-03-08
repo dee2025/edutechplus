@@ -299,7 +299,9 @@ export default function ViewsMonitor() {
             {refreshCount})
           </p>
         ) : (
-          <p>Auto-refresh disabled. Click "Refresh" to update manually.</p>
+          <p>
+            Auto-refresh disabled. Click &quot;Refresh&quot; to update manually.
+          </p>
         )}
       </div>
     </main>

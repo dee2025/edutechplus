@@ -232,7 +232,8 @@ export default function TagPage({ params }) {
             Tag Not Found
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            The tag you're looking for doesn't exist or has been removed.
+            The tag you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
           <Link
             href="/tags"

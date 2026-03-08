@@ -117,7 +117,7 @@ const LinkedImage = Image.extend({
   },
 });
 
-export default ({ content, onChange }) => {
+const RichTextEditor = ({ content, onChange }) => {
   const editor = useEditor(
     {
       extensions: [
@@ -857,3 +857,5 @@ export default ({ content, onChange }) => {
     </>
   );
 };
+
+export default RichTextEditor;

@@ -25,13 +25,13 @@ async function getSitemapStats() {
     };
   } catch (error) {
     console.error("Error fetching stats:", error);
-    return { articles: 0, categories: 0, roadmaps: 0 };
+    return { articles: 0, categories: 0 };
   }
 }
 
 export default async function SitemapSetupPage() {
   const stats = await getSitemapStats();
-  const totalURLs = 10 + stats.articles + stats.categories; // 10 static pages
+  const totalURLs = 9 + stats.articles + stats.categories; // 9 static pages
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-8">
@@ -41,7 +41,7 @@ export default async function SitemapSetupPage() {
         </h1>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-800">
             <p className="text-gray-600 dark:text-gray-400 text-sm">
               Published Articles
@@ -56,12 +56,6 @@ export default async function SitemapSetupPage() {
             </p>
             <p className="text-3xl font-bold text-green-600 dark:text-green-400">
               {stats.categories}
-            </p>
-          </div>
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-800">
-            <p className="text-gray-600 dark:text-gray-400 text-sm">Roadmaps</p>
-            <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-              {stats.roadmaps}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-800">
@@ -147,16 +141,6 @@ export default async function SitemapSetupPage() {
                 /api/public/sitemap?type=categories
               </a>
             </p>
-            <p>
-              <a
-                href="/api/public/sitemap?type=roadmaps"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline break-all"
-              >
-                /api/public/sitemap?type=roadmaps
-              </a>
-            </p>
           </div>
         </div>
 
@@ -175,10 +159,9 @@ export default async function SitemapSetupPage() {
               ✅ NEXT_PUBLIC_SITE_URL added to .env.local -{" "}
               {process.env.NEXT_PUBLIC_SITE_URL}
             </li>
-            <li>✅ Static pages included - 10 pages</li>
+            <li>✅ Static pages included - 9 pages</li>
             <li>✅ Dynamic articles included - {stats.articles} URLs</li>
             <li>✅ Dynamic categories included - {stats.categories} URLs</li>
-            <li>✅ Dynamic roadmaps included - {stats.roadmaps} URLs</li>
             <li>✅ Automatic pagination support - 50k URLs per sitemap max</li>
             <li>
               ✅ Caching enabled - 1 hour, stale-while-revalidate: 24 hours

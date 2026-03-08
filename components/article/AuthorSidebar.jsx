@@ -21,7 +21,7 @@ export default function AuthorSidebar({ article, latestByAuthor = [] }) {
 
   return (
     <aside className="space-y-5 lg:sticky lg:top-24">
-      <ArticleSidebarActions article={article} />
+      {/* <ArticleSidebarActions article={article} /> */}
       <div className="bg-white dark:bg-gray-900 rounded-lg p-5 border border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-3">
           {article.author_avatar ? (

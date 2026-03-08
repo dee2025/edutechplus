@@ -86,27 +86,6 @@ const Header = () => {
               className="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-[#111827] text-gray-900 dark:text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400"
             />
           </div> */}
-          {/* <div className="hidden md:flex flex-1 max-w-xl items-center justify-center gap-6">
-            <Link
-              href="/ai-tutor"
-              className="text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:opacity-80"
-            >
-              Your Tutor
-            </Link>
-            <Link
-              href="/roadmaps"
-              className="text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:opacity-80"
-            >
-              Roadmaps
-            </Link>
-            <Link
-              href="/latest-articles"
-              className="text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:opacity-80"
-            >
-              Latest Updates →
-            </Link>
-          </div> */}
-
           {/* Right: CTA */}
           <div className="flex items-center gap-3">
             <ThemeToggle />

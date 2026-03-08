@@ -8,7 +8,6 @@ const STATIC_PAGES = [
   { url: "/", priority: 1.0, changefreq: "daily" },
   { url: "/categories", priority: 0.9, changefreq: "weekly" },
   { url: "/latest-articles", priority: 0.9, changefreq: "daily" },
-  { url: "/roadmaps", priority: 0.8, changefreq: "weekly" },
   { url: "/about-us", priority: 0.7, changefreq: "monthly" },
   { url: "/contact-us", priority: 0.5, changefreq: "monthly" },
   { url: "/privacy-policy", priority: 0.5, changefreq: "monthly" },

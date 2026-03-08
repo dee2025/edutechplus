@@ -287,7 +287,7 @@ export default function TagInput({ value = [], onChange, max = 5 }) {
                 </kbd>{" "}
                 to create{" "}
                 <span className="font-medium text-gray-900 dark:text-gray-100">
-                  "{inputValue}"
+                  &quot;{inputValue}&quot;
                 </span>
               </p>
             </div>

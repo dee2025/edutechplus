@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function EmailStatusBanner() {
@@ -41,14 +42,14 @@ export default function EmailStatusBanner() {
                 Email Service Not Configured
               </p>
               <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
-                Subscribers won't receive welcome emails. Configure SMTP in
+                Subscribers won&apos;t receive welcome emails. Configure SMTP in
                 .env.local or{" "}
-                <a
+                <Link
                   href="/admin/email-test"
                   className="underline font-medium hover:text-yellow-900 dark:hover:text-yellow-200"
                 >
                   test your setup here
-                </a>
+                </Link>
               </p>
             </div>
           </div>

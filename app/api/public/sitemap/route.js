@@ -2,11 +2,11 @@ import { query } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://edutechplus.com";
+export const dynamic = "force-dynamic";
 
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1");
     const type = searchParams.get("type") || "all";
 
     let sql = "";

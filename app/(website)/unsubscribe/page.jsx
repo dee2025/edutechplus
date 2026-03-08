@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function UnsubscribePage() {
@@ -51,8 +52,8 @@ export default function UnsubscribePage() {
             Unsubscribe from Newsletter
           </h1>
           <p className="mt-3 text-gray-600 dark:text-gray-400">
-            We're sorry to see you go. Enter your email address to unsubscribe
-            from our newsletter.
+            We&apos;re sorry to see you go. Enter your email address to
+            unsubscribe from our newsletter.
           </p>
         </div>
 
@@ -98,12 +99,12 @@ export default function UnsubscribePage() {
 
         {status === "success" && (
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/"
               className="text-cyan-400 hover:text-cyan-300 font-medium"
             >
               ← Back to Home
-            </a>
+            </Link>
           </div>
         )}
       </div>

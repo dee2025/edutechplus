@@ -13,7 +13,7 @@
  * - Located at /robots.txt
  * - Points search engines to the sitemap
  *
- * API ENDPOINT: /api/public/sitemap?type=articles|categories|roadmaps|all
+ * API ENDPOINT: /api/public/sitemap?type=articles|categories|all
  * - Detailed sitemap generation per content type
  * - Includes pagination support
  * - Useful for debugging and custom implementations
@@ -24,7 +24,6 @@
  *    - Home page (priority: 1.0, daily)
  *    - Categories page (priority: 0.9, weekly)
  *    - Latest articles (priority: 0.9, daily)
- *    - Roadmaps page (priority: 0.8, weekly)
  *    - Info pages: about-us, privacy-policy, terms, etc. (priority: 0.5-0.7, monthly)
  *
  * 2. Dynamic Articles (priority 0.7, weekly):
@@ -35,10 +34,6 @@
  * 3. Dynamic Categories (priority 0.75, weekly):
  *    - Individual category pages
  *    - Filtered by parent_id IS NULL (top-level categories only)
- *    - Last modified from database
- *
- * 4. Dynamic Roadmaps (priority 0.7, weekly):
- *    - Individual roadmap pages
  *    - Last modified from database
  *
  * PAGINATION:
@@ -56,7 +51,6 @@
  * - Visit /robots.txt to view robots configuration
  * - Visit /api/public/sitemap?type=articles for articles only
  * - Visit /api/public/sitemap?type=categories for categories only
- * - Visit /api/public/sitemap?type=roadmaps for roadmaps only
  *
  * IMPORTANT: Update NEXT_PUBLIC_SITE_URL in .env.local
  * Example: NEXT_PUBLIC_SITE_URL=https://yoursite.com
@@ -115,12 +109,6 @@ export default function SitemapConfig() {
                   /api/public/sitemap?type=categories
                 </code>{" "}
                 - Categories only
-              </p>
-              <p>
-                <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                  /api/public/sitemap?type=roadmaps
-                </code>{" "}
-                - Roadmaps only
               </p>
             </div>
           </section>

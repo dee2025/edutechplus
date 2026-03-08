@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function NewsletterPage() {
@@ -119,12 +120,12 @@ export default function NewsletterPage() {
                 You need to configure SMTP settings before you can send
                 newsletters.
               </p>
-              <a
+              <Link
                 href="/admin/email-test"
                 className="inline-block text-sm font-medium text-yellow-800 dark:text-yellow-300 underline hover:text-yellow-900 dark:hover:text-yellow-200"
               >
                 Configure Email Settings →
-              </a>
+              </Link>
             </div>
           </div>
         </div>
